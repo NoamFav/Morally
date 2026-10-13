@@ -1,0 +1,164 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Retenir from '../../components/lecon/Retenir.astro';
+import Exemple from '../../components/lecon/Exemple.astro';
+import Citation from '../../components/lecon/Citation.astro';
+import Note from '../../components/lecon/Note.astro';
+import Def from '../../components/lecon/Def.astro';
+import { romain, typoProfond } from '../../lib/programme';
+import '../../styles/lecon.css';
+
+export async function getStaticPaths() {
+	const pages = (await getCollection('methode')).sort((a, b) => a.data.ordre - b.data.ordre);
+	return pages.map((page, i) => ({
+		params: { id: page.id },
+		props: { page, precedente: pages[i - 1], suivante: pages[i + 1] },
+	}));
+}
+
+interface Props {
+	page: CollectionEntry<'methode'>;
+	precedente?: CollectionEntry<'methode'>;
+	suivante?: CollectionEntry<'methode'>;
+}
+
+const { page, precedente, suivante } = Astro.props;
+const data = typoProfond(page.data);
+const { Content } = await render(page);
+---
+
+<Base title={data.titre} description={data.resume}>
+	<article>
+		<header class="tete">
+			<p class="sc sur"><a href="/methode">Méthode</a> — Fiche {romain(data.ordre)}</p>
+			<h1>{data.titre}</h1>
+			<span class="fleuron" aria-hidden="true">❦</span>
+			<p class="resume">{data.resume}</p>
+		</header>
+
+		<div class="grille">
+			<div class="prose lettrine">
+				<Content components={{ Retenir, Exemple, Citation, Note, Def }} />
+			</div>
+
+			<nav class="voisines" aria-label="Fiches voisines">
+				{
+					precedente ? (
+						<a href={`/methode/${precedente.id}`} class="voisine">
+							<span class="sc">Fiche précédente</span>
+							<span class="titre">{precedente.data.titre}</span>
+						</a>
+					) : (
+						<span />
+					)
+				}
+				{
+					suivante && (
+						<a href={`/methode/${suivante.id}`} class="voisine suiv">
+							<span class="sc">Fiche suivante</span>
+							<span class="titre">{suivante.data.titre}</span>
+						</a>
+					)
+				}
+			</nav>
+		</div>
+	</article>
+</Base>
+
+<style>
+	.tete {
+		text-align: center;
+		max-width: 44rem;
+		margin: 0 auto;
+		padding: 4.5rem 1.5rem 1rem;
+	}
+
+	.sur {
+		color: var(--gold);
+		letter-spacing: 0.14em;
+		margin: 0 0 0.8rem;
+	}
+
+	.sur a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	h1 {
+		font-size: clamp(2.6rem, 6.5vw, 4rem);
+		margin: 0;
+		line-height: 1.02;
+	}
+
+	.fleuron {
+		margin: 1rem 0 1.1rem;
+	}
+
+	.resume {
+		font-style: italic;
+		font-size: 1.3rem;
+		color: var(--ink-2);
+		margin: 0;
+	}
+
+	.grille {
+		display: grid;
+		grid-template-columns: minmax(0, var(--measure)) var(--margin-col);
+		column-gap: var(--gap-col);
+		justify-content: center;
+		padding: 2.5rem 1.5rem 0;
+	}
+
+	.voisines {
+		grid-column: 1;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+		border-top: 1px solid var(--rule-2);
+		padding-top: 2rem;
+		margin-top: 2rem;
+	}
+
+	.voisine {
+		display: flex;
+		flex-direction: column;
+		text-decoration: none;
+		color: var(--ink-3);
+		padding: 0.8rem 1rem;
+		border: 1px solid var(--rule);
+	}
+
+	.voisine:hover {
+		border-color: var(--gold);
+	}
+
+	.voisine.suiv {
+		grid-column: 2;
+		text-align: right;
+	}
+
+	.titre {
+		font-family: var(--font-display);
+		font-size: 1.35rem;
+		color: var(--ink);
+	}
+
+	@media (max-width: 68rem) {
+		.grille {
+			grid-template-columns: minmax(0, 40rem);
+		}
+	}
+
+	@media (max-width: 40rem) {
+		.grille {
+			padding: 2rem 1rem 0;
+		}
+		.voisines {
+			grid-template-columns: 1fr;
+		}
+		.voisine.suiv {
+			grid-column: 1;
+		}
+	}
+</style>

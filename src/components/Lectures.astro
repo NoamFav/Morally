@@ -1,0 +1,100 @@
+---
+import { TYPES_LECTURE } from '../lib/programme';
+
+interface Lecture {
+	titre: string;
+	auteur: string;
+	annee?: string;
+	type: 'oeuvre' | 'etude' | 'article' | 'en-ligne';
+	note: string;
+	url?: string;
+}
+
+interface Props {
+	lectures: Lecture[];
+}
+
+const ordre = ['oeuvre', 'etude', 'article', 'en-ligne'] as const;
+const lectures = [...Astro.props.lectures].sort((a, b) => ordre.indexOf(a.type) - ordre.indexOf(b.type));
+---
+
+<ul class="lectures">
+	{
+		lectures.map((l) => (
+			<li class="lecture">
+				<span class="lecture-type sc">{TYPES_LECTURE[l.type]}</span>
+				<div>
+					<p class="lecture-ref">
+						<span class="lecture-auteur">{l.auteur}</span>,{' '}
+						{l.url ? (
+							<a href={l.url} rel="noopener" target="_blank">
+								<cite>{l.titre}</cite>
+							</a>
+						) : (
+							<cite>{l.titre}</cite>
+						)}
+						{l.annee && <span class="lecture-annee"> ({l.annee})</span>}
+					</p>
+					<p class="lecture-note">{l.note}</p>
+				</div>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.lectures {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		border-top: 1px solid var(--rule);
+	}
+
+	.lecture {
+		display: grid;
+		grid-template-columns: 5.5rem 1fr;
+		gap: 1rem;
+		padding: 0.9rem 0;
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.lecture-type {
+		color: var(--gold);
+		font-size: 0.98rem;
+		padding-top: 0.15rem;
+	}
+
+	.lecture-ref {
+		margin: 0;
+		font-size: 1.15rem;
+	}
+
+	.lecture-auteur {
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.05em;
+		font-size: 1.12em;
+	}
+
+	cite {
+		font-style: italic;
+	}
+
+	.lecture-annee {
+		color: var(--ink-3);
+		font-variant-numeric: lining-nums;
+	}
+
+	.lecture-note {
+		margin: 0.2rem 0 0;
+		color: var(--ink-2);
+		font-size: 1.05rem;
+		line-height: 1.45;
+	}
+
+	@media (max-width: 40rem) {
+		.lecture {
+			grid-template-columns: 1fr;
+			gap: 0.1rem;
+		}
+	}
+</style>

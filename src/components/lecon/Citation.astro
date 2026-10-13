@@ -1,0 +1,20 @@
+---
+import { getEntry } from 'astro:content';
+
+interface Props {
+	/** id in the auteurs collection, or a plain name for people without a page */
+	auteur: string;
+	source?: string;
+}
+
+const { auteur, source } = Astro.props;
+const fiche = /^[a-z0-9-]+$/.test(auteur) ? await getEntry('auteurs', auteur) : undefined;
+const nom = fiche?.data.nom ?? auteur;
+---
+
+<figure class="citation">
+	<blockquote><slot /></blockquote>
+	<figcaption>
+		— {fiche ? <a href={`/auteurs/${fiche.id}`}>{nom}</a> : nom}{source && <>, <cite>{source}</cite></>}
+	</figcaption>
+</figure>

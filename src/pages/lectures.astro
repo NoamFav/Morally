@@ -1,0 +1,124 @@
+---
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import Lectures from '../components/Lectures.astro';
+import { notionsTriees, TYPES_LECTURE, typoProfond } from '../lib/programme';
+
+const notions = (await notionsTriees()).map((n) => ({ ...n, data: typoProfond(n.data) }));
+const total = notions.reduce((s, n) => s + n.data.lectures.length, 0);
+---
+
+<Base title="Lectures" description="Œuvres, études et articles pour approfondir chaque notion du programme.">
+	<EnTete
+		sur="Annexe"
+		titre="Lectures"
+		intro={`${total} références : les œuvres à lire, des études accessibles et quelques articles de recherche.`}
+	/>
+
+	<div class="wrap-narrow">
+		<div class="filtres no-print" role="group" aria-label="Filtrer par type">
+			<button type="button" class="filtre" aria-pressed="true" data-type="tout">Tout</button>
+			{
+				Object.entries(TYPES_LECTURE).map(([k, v]) => (
+					<button type="button" class="filtre" aria-pressed="false" data-type={k}>
+						{v}
+					</button>
+				))
+			}
+		</div>
+
+		<p class="conseil">
+			Les <strong>œuvres</strong> sont les textes des philosophes eux-mêmes : en lire quelques pages vaut mieux que dix
+			résumés. Les <strong>articles</strong> sont des textes de recherche, parfois en anglais, pour aller au-delà du
+			programme.
+		</p>
+
+		{
+			notions.map((n) => (
+				<section class="bloc" data-bloc>
+					<h2>
+						<a href={`/notions/${n.id}#lectures`}>{n.data.titre}</a>
+					</h2>
+					<Lectures lectures={n.data.lectures} />
+				</section>
+			))
+		}
+	</div>
+</Base>
+
+<script>
+	const boutons = [...document.querySelectorAll<HTMLButtonElement>('.filtre')];
+	const typeDe: Record<string, string> = { Œuvre: 'oeuvre', Étude: 'etude', Article: 'article', 'En ligne': 'en-ligne' };
+	boutons.forEach((b) =>
+		b.addEventListener('click', () => {
+			boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+			const t = b.dataset.type!;
+			document.querySelectorAll<HTMLElement>('[data-bloc]').forEach((bloc) => {
+				let visibles = 0;
+				bloc.querySelectorAll<HTMLElement>('.lecture').forEach((li) => {
+					const type = typeDe[li.querySelector('.lecture-type')!.textContent!.trim()];
+					const ok = t === 'tout' || type === t;
+					li.hidden = !ok;
+					if (ok) visibles++;
+				});
+				bloc.hidden = visibles === 0;
+			});
+		}),
+	);
+</script>
+
+<style>
+	.filtres {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.filtre {
+		appearance: none;
+		font: inherit;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.08em;
+		font-size: 1.05rem;
+		color: var(--ink-2);
+		background: none;
+		border: 1px solid var(--rule);
+		border-radius: 99px;
+		padding: 0.15rem 0.9rem 0.25rem;
+		cursor: pointer;
+	}
+
+	.filtre[aria-pressed='true'] {
+		background: var(--ink);
+		border-color: var(--ink);
+		color: var(--paper);
+	}
+
+	.conseil {
+		font-size: 1.08rem;
+		color: var(--ink-2);
+		text-align: center;
+		margin: 0 auto 2.5rem;
+		max-width: 34rem;
+	}
+
+	.bloc {
+		margin-bottom: 2.5rem;
+	}
+
+	h2 {
+		font-size: 1.8rem;
+		margin: 0 0 0.6rem;
+	}
+
+	h2 a {
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	h2 a:hover {
+		color: var(--oxblood);
+	}
+</style>

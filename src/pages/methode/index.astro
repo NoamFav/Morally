@@ -1,0 +1,85 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import EnTete from '../../components/EnTete.astro';
+import { romain, typoProfond } from '../../lib/programme';
+
+const pages = (await getCollection('methode'))
+	.sort((a, b) => a.data.ordre - b.data.ordre)
+	.map((p) => ({ ...p, data: typoProfond(p.data) }));
+---
+
+<Base title="Méthode" description="Méthode de la dissertation et de l’explication de texte pour le bac de philosophie.">
+	<EnTete
+		sur="Annexe"
+		titre="Méthode"
+		intro="L’épreuve dure quatre heures. On choisit entre deux sujets de dissertation et une explication de texte. Voici comment s’y prendre."
+	/>
+
+	<div class="wrap-narrow">
+		<ol class="fiches">
+			{
+				pages.map((p) => (
+					<li>
+						<a href={`/methode/${p.id}`}>
+							<span class="num">{romain(p.data.ordre)}</span>
+							<span class="texte">
+								<span class="titre">{p.data.titre}</span>
+								<span class="resume">{p.data.resume}</span>
+							</span>
+						</a>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</Base>
+
+<style>
+	.fiches {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		border-top: 1px solid var(--rule);
+	}
+
+	a {
+		display: grid;
+		grid-template-columns: 3rem 1fr;
+		gap: 0.75rem;
+		padding: 1.1rem 0.25rem;
+		border-bottom: 1px solid var(--rule);
+		text-decoration: none;
+		color: var(--ink);
+		transition: background 0.15s;
+	}
+
+	a:hover {
+		background: var(--paper-2);
+	}
+
+	.num {
+		font-family: var(--font-display);
+		font-weight: 600;
+		color: var(--gold);
+		font-size: 1.3rem;
+		text-align: right;
+		padding-right: 0.3rem;
+	}
+
+	.texte {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.titre {
+		font-family: var(--font-display);
+		font-size: 1.75rem;
+		line-height: 1.2;
+	}
+
+	.resume {
+		color: var(--ink-2);
+		font-size: 1.1rem;
+	}
+</style>

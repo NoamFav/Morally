@@ -1,0 +1,747 @@
+---
+import { getEntries, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Def from '../../components/lecon/Def.astro';
+import Note from '../../components/lecon/Note.astro';
+import Retenir from '../../components/lecon/Retenir.astro';
+import Citation from '../../components/lecon/Citation.astro';
+import Exemple from '../../components/lecon/Exemple.astro';
+import Cartes from '../../components/exercices/Cartes.astro';
+import Quiz from '../../components/exercices/Quiz.astro';
+import Notes from '../../components/exercices/Notes.astro';
+import Lectures from '../../components/Lectures.astro';
+import { notionsTriees, parcoursDe, romain, idCarte, typoProfond, tempsDeLecture, type Notion } from '../../lib/programme';
+import { typo } from '../../lib/typo.mjs';
+import '../../styles/lecon.css';
+
+export async function getStaticPaths() {
+	const notions = await notionsTriees();
+	return notions.map((notion, i) => ({
+		params: { id: notion.id },
+		props: { notion, precedente: notions[i - 1], suivante: notions[i + 1], toutes: notions },
+	}));
+}
+
+interface Props {
+	notion: Notion;
+	precedente?: Notion;
+	suivante?: Notion;
+	toutes: Notion[];
+}
+
+const { notion, precedente, suivante, toutes } = Astro.props;
+const data = typoProfond(notion.data);
+const { Content, headings } = await render(notion);
+const parcours = parcoursDe(data.parcours);
+const lecture = tempsDeLecture(notion.body);
+const auteurs = await getEntries(data.auteurs);
+const courants = await getEntries(data.courants);
+const liees = data.liees
+	.map((id) => toutes.find((n) => n.id === id))
+	.filter((n): n is Notion => !!n);
+
+const cartes = data.cartes.map((c, i) => ({ ...c, id: idCarte(notion.id, notion.data.cartes[i].recto) }));
+
+// Table of contents numbered like the CSS counters in lecon.css
+let h2 = 0;
+let h3 = 0;
+const sommaire = headings
+	.filter((h) => h.depth === 2 || h.depth === 3)
+	.map((h) => ({ ...h, text: typo(h.text) }))
+	.map((h) => {
+		if (h.depth === 2 && h.slug === 'conclusion') return { ...h, num: '' };
+		if (h.depth === 2) {
+			h2++;
+			h3 = 0;
+			return { ...h, num: `${romain(h2)}.` };
+		}
+		h3++;
+		return { ...h, num: `${'abcdefgh'[h3 - 1]}.` };
+	});
+
+const annexes = [
+	{ slug: 'essentiel', text: 'L’essentiel' },
+	{ slug: 'cartes', text: 'Cartes de révision' },
+	{ slug: 'questionnaire', text: 'Questionnaire' },
+	{ slug: 'sujets', text: 'Sujets de dissertation' },
+	{ slug: 'lectures', text: 'Pour aller plus loin' },
+	{ slug: 'notes', text: 'Mes notes' },
+];
+
+const composants = { Def, Note, Retenir, Citation, Exemple };
+---
+
+<Base title={data.titre} description={`${data.titre} : ${data.accroche}`}>
+	<article class="lecon" data-notion={notion.id}>
+		<header class="lecon-tete">
+			<p class="surtitre sc">
+				<a href={`/#livre-${parcours.livre}`}>Livre {romain(parcours.livre)} · {parcours.titre}</a>{' '}
+				<span aria-hidden="true">—</span>{' '}Leçon {romain(data.numero)}
+			</p>
+			<h1>{data.titre}</h1>
+			<span class="fleuron" aria-hidden="true">❦</span>
+			<p class="problematique">{data.question}</p>
+			<p class="meta">
+				<span>{lecture} min de lecture</span>
+				<span aria-hidden="true">·</span>
+				<a href="#cartes">{data.cartes.length} cartes</a>
+				<span aria-hidden="true">·</span>
+				<a href="#questionnaire">{data.quiz.length} questions</a>
+				<span class="etat-lu" data-etat-lu hidden><span aria-hidden="true">·</span> <em>Leçon lue</em></span>
+			</p>
+		</header>
+
+		<div class="lecon-grille">
+			<aside class="sommaire no-print" aria-label="Sommaire">
+				<div class="sommaire-colle">
+					<p class="sommaire-titre sc">Sommaire</p>
+					<ol>
+						{
+							sommaire.map((h) => (
+								<li class={`niv-${h.depth}`}>
+									<a href={`#${h.slug}`}>
+										<span class="num">{h.num}</span>
+										<span>{h.text}</span>
+									</a>
+								</li>
+							))
+						}
+					</ol>
+					<p class="sommaire-titre sc">Exercices</p>
+					<ol>
+						{
+							annexes.map((h) => (
+								<li class="niv-2">
+									<a href={`#${h.slug}`}>
+										<span class="num">❧</span>
+										<span>{h.text}</span>
+									</a>
+								</li>
+							))
+						}
+					</ol>
+				</div>
+			</aside>
+
+			<div class="lecon-corps">
+				<details class="sommaire-mobile no-print">
+					<summary class="sc">Sommaire</summary>
+					<ol>
+						{
+							sommaire.map((h) => (
+								<li class={`niv-${h.depth}`}>
+									<a href={`#${h.slug}`}>
+										{h.num} {h.text}
+									</a>
+								</li>
+							))
+						}
+						{
+							annexes.map((h) => (
+								<li class="niv-2">
+									<a href={`#${h.slug}`}>❧ {h.text}</a>
+								</li>
+							))
+						}
+					</ol>
+				</details>
+
+				<div class="prose lettrine">
+					<Content components={composants} />
+				</div>
+
+				<div class="filet" aria-hidden="true">❦</div>
+
+				<section id="essentiel" class="annexe">
+					<p class="annexe-sur sc">Synthèse</p>
+					<h2>L’essentiel</h2>
+					<ol class="essentiel">
+						{data.essentiel.map((e) => <li set:html={e} />)}
+					</ol>
+
+					<div class="reperes">
+						<div>
+							<p class="reperes-titre sc">Auteurs de la leçon</p>
+							<ul>
+								{
+									auteurs.map((a) => (
+										<li>
+											<a href={`/auteurs/${a.id}`}>{a.data.nom}</a>
+											<span class="dates">{a.data.dates}</span>
+										</li>
+									))
+								}
+							</ul>
+						</div>
+						{
+							courants.length > 0 && (
+								<div>
+									<p class="reperes-titre sc">Courants</p>
+									<ul>
+										{courants.map((c) => (
+											<li>
+												<a href={`/courants/${c.id}`}>{c.data.nom}</a>
+											</li>
+										))}
+									</ul>
+								</div>
+							)
+						}
+						{
+							liees.length > 0 && (
+								<div>
+									<p class="reperes-titre sc">Notions voisines</p>
+									<ul>
+										{liees.map((n) => (
+											<li>
+												<a href={`/notions/${n.id}`}>{n.data.titre}</a>
+											</li>
+										))}
+									</ul>
+								</div>
+							)
+						}
+					</div>
+				</section>
+
+				<section id="cartes" class="annexe">
+					<p class="annexe-sur sc">S’entraîner</p>
+					<h2>Cartes de révision</h2>
+					<p class="annexe-intro">
+						Lisez la question, répondez de tête, puis retournez la carte. Les cartes manquées reviennent
+						plus tôt dans vos <a href="/revisions">révisions</a>.
+					</p>
+					<Cartes cartes={cartes} />
+				</section>
+
+				<section id="questionnaire" class="annexe">
+					<p class="annexe-sur sc">Vérifier</p>
+					<h2>Questionnaire</h2>
+					<Quiz notion={notion.id} questions={data.quiz} />
+				</section>
+
+				<section id="sujets" class="annexe">
+					<p class="annexe-sur sc">Composer</p>
+					<h2>Sujets de dissertation</h2>
+					<p class="annexe-intro">
+						Cherchez d’abord votre propre problématique, puis comparez avec les pistes proposées. Voir
+						aussi la <a href="/methode/la-dissertation">méthode de la dissertation</a>.
+					</p>
+					<div class="sujets">
+						{
+							data.sujets.map((s) => (
+								<details class="sujet">
+									<summary>
+										<span class="sujet-intitule">{s.intitule}</span>
+										<span class="sujet-voir sc">Pistes</span>
+									</summary>
+									<div class="sujet-corps">
+										<p>
+											<span class="sc">Enjeu.</span> {s.enjeu}
+										</p>
+										<ol class="plan">
+											{s.plan.map((p, i) => (
+												<li>
+													<span class="plan-num">{romain(i + 1)}.</span> <span set:html={p} />
+												</li>
+											))}
+										</ol>
+									</div>
+								</details>
+							))
+						}
+					</div>
+				</section>
+
+				<section id="lectures" class="annexe">
+					<p class="annexe-sur sc">Approfondir</p>
+					<h2>Pour aller plus loin</h2>
+					<Lectures lectures={data.lectures} />
+				</section>
+
+				<section id="notes" class="annexe no-print">
+					<p class="annexe-sur sc">Carnet</p>
+					<h2>Mes notes</h2>
+					<Notes notion={notion.id} titre={data.titre} />
+				</section>
+
+				<div class="fin-lecon no-print">
+					<button type="button" class="btn btn-plein" data-marquer-lu>Marquer la leçon comme lue</button>
+					<nav class="voisines" aria-label="Leçons voisines">
+						{
+							precedente && (
+								<a href={`/notions/${precedente.id}`} class="voisine prec">
+									<span class="sc">Leçon précédente</span>
+									<span class="voisine-titre">{precedente.data.titre}</span>
+								</a>
+							)
+						}
+						{
+							suivante && (
+								<a href={`/notions/${suivante.id}`} class="voisine suiv">
+									<span class="sc">Leçon suivante</span>
+									<span class="voisine-titre">{suivante.data.titre}</span>
+								</a>
+							)
+						}
+					</nav>
+				</div>
+			</div>
+		</div>
+	</article>
+</Base>
+
+<script>
+	import { charger, modifier, aujourdhui } from '../../scripts/store';
+
+	const article = document.querySelector<HTMLElement>('article.lecon')!;
+	const id = article.dataset.notion!;
+	const bouton = document.querySelector<HTMLButtonElement>('[data-marquer-lu]')!;
+	const etat = document.querySelector<HTMLElement>('[data-etat-lu]')!;
+
+	modifier((d) => {
+		(d.notions[id] ??= {}).visite = aujourdhui();
+		d.derniere = id;
+	});
+
+	function majLu() {
+		const lue = !!charger().notions[id]?.lue;
+		etat.hidden = !lue;
+		bouton.textContent = lue ? 'Leçon lue ✓  (annuler)' : 'Marquer la leçon comme lue';
+		bouton.classList.toggle('btn-plein', !lue);
+	}
+
+	bouton.addEventListener('click', () => {
+		modifier((d) => {
+			const n = (d.notions[id] ??= {});
+			if (n.lue) delete n.lue;
+			else n.lue = aujourdhui();
+		});
+		majLu();
+	});
+	majLu();
+
+	// Highlight the current section in the table of contents
+	const liens = new Map<string, HTMLAnchorElement>();
+	document.querySelectorAll<HTMLAnchorElement>('.sommaire a').forEach((a) => {
+		liens.set(decodeURIComponent(a.hash.slice(1)), a);
+	});
+	const cibles = [...liens.keys()]
+		.map((k) => document.getElementById(k))
+		.filter((e): e is HTMLElement => !!e);
+	let courant: HTMLAnchorElement | undefined;
+	const obs = new IntersectionObserver(
+		(entrees) => {
+			for (const e of entrees) {
+				if (e.isIntersecting) {
+					courant?.removeAttribute('aria-current');
+					courant = liens.get(e.target.id);
+					courant?.setAttribute('aria-current', 'true');
+				}
+			}
+		},
+		{ rootMargin: '-15% 0px -75% 0px' },
+	);
+	cibles.forEach((c) => obs.observe(c));
+</script>
+
+<style>
+	.lecon-tete {
+		text-align: center;
+		max-width: 46rem;
+		margin: 0 auto;
+		padding: 4.5rem 1.5rem 1rem;
+	}
+
+	.surtitre {
+		color: var(--gold);
+		font-size: 1.1rem;
+		margin: 0 0 0.9rem;
+		letter-spacing: 0.14em;
+	}
+
+	.surtitre a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.surtitre a:hover {
+		text-decoration: underline;
+	}
+
+	h1 {
+		font-size: clamp(2.9rem, 7vw, 4.6rem);
+		font-weight: 500;
+		margin: 0;
+		letter-spacing: -0.005em;
+		line-height: 1;
+	}
+
+	.lecon-tete .fleuron {
+		margin: 1.1rem 0 1.2rem;
+	}
+
+	.problematique {
+		font-style: italic;
+		font-size: 1.45rem;
+		line-height: 1.4;
+		margin: 0 auto 1.25rem;
+		max-width: 34rem;
+		color: var(--ink);
+	}
+
+	.meta {
+		font-size: 1rem;
+		color: var(--ink-3);
+		display: flex;
+		gap: 0.5rem;
+		justify-content: center;
+		flex-wrap: wrap;
+		margin: 0;
+		font-variant-numeric: lining-nums;
+	}
+
+	.meta a {
+		color: var(--ink-2);
+		text-decoration: none;
+		border-bottom: 1px dotted var(--rule-2);
+	}
+
+	.etat-lu em {
+		color: var(--vert);
+	}
+
+	/* ——— Three-column grid: contents · text · margin ——— */
+
+	.lecon-grille {
+		display: grid;
+		grid-template-columns: var(--toc-col) minmax(0, var(--measure)) var(--margin-col);
+		column-gap: var(--gap-col);
+		justify-content: center;
+		padding: 3rem 1.5rem 0;
+	}
+
+	.lecon-corps {
+		grid-column: 2;
+		min-width: 0;
+	}
+
+	.sommaire {
+		grid-column: 1;
+		font-size: 0.98rem;
+	}
+
+	.sommaire-colle {
+		position: sticky;
+		top: 5.5rem;
+		max-height: calc(100vh - 7rem);
+		overflow-y: auto;
+		padding-right: 0.5rem;
+		scrollbar-width: thin;
+		scrollbar-color: var(--rule) transparent;
+	}
+
+	.sommaire-titre {
+		color: var(--gold);
+		margin: 0 0 0.5rem;
+		font-size: 1rem;
+	}
+
+	.sommaire ol {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1.6rem;
+	}
+
+	.sommaire li a {
+		display: grid;
+		grid-template-columns: 1.6rem 1fr;
+		gap: 0.1rem;
+		color: var(--ink-3);
+		text-decoration: none;
+		padding: 0.18rem 0;
+		line-height: 1.3;
+		transition: color 0.15s;
+	}
+
+	.sommaire li.niv-3 a {
+		padding-left: 1.6rem;
+		font-size: 0.93rem;
+	}
+
+	.sommaire li a:hover,
+	.sommaire li a[aria-current] {
+		color: var(--ink);
+	}
+
+	.sommaire li a[aria-current] .num {
+		color: var(--gold);
+	}
+
+	.sommaire .num {
+		font-variant-numeric: lining-nums;
+	}
+
+	.sommaire-mobile {
+		display: none;
+		border-top: 1px solid var(--rule);
+		border-bottom: 1px solid var(--rule);
+		padding: 0.6rem 0;
+		margin-bottom: 2rem;
+	}
+
+	.sommaire-mobile summary {
+		cursor: pointer;
+		color: var(--gold);
+	}
+
+	.sommaire-mobile ol {
+		list-style: none;
+		padding: 0.5rem 0 0.25rem;
+		margin: 0;
+	}
+
+	.sommaire-mobile li {
+		padding: 0.15rem 0;
+	}
+
+	.sommaire-mobile li.niv-3 {
+		padding-left: 1.25rem;
+	}
+
+	.sommaire-mobile a {
+		color: var(--ink-2);
+		text-decoration: none;
+	}
+
+	@media (max-width: 82rem) {
+		.lecon-grille {
+			grid-template-columns: minmax(0, var(--measure)) var(--margin-col);
+		}
+		.sommaire {
+			display: none;
+		}
+		.lecon-corps {
+			grid-column: 1;
+		}
+		.sommaire-mobile {
+			display: block;
+		}
+	}
+
+	@media (max-width: 68rem) {
+		.lecon-grille {
+			grid-template-columns: minmax(0, 40rem);
+		}
+	}
+
+	@media (max-width: 40rem) {
+		.lecon-tete {
+			padding: 3rem 1rem 0.5rem;
+		}
+		.lecon-grille {
+			padding: 2rem 1rem 0;
+		}
+		.problematique {
+			font-size: 1.25rem;
+		}
+	}
+
+	/* ——— Annexes ——— */
+
+	.annexe {
+		margin: 0 0 4rem;
+	}
+
+	.annexe h2 {
+		font-size: 2.1rem;
+		margin: 0 0 1.25rem;
+	}
+
+	.annexe-sur {
+		color: var(--gold);
+		margin: 0 0 0.2rem;
+		font-size: 1.05rem;
+	}
+
+	.annexe-intro {
+		color: var(--ink-2);
+		font-size: 1.1rem;
+		max-width: 34rem;
+		margin: -0.4rem 0 1.5rem;
+	}
+
+	.essentiel {
+		padding-left: 1.6rem;
+		margin: 0 0 2rem;
+		font-size: 1.2rem;
+	}
+
+	.essentiel li {
+		margin-bottom: 0.6rem;
+		padding-left: 0.3rem;
+	}
+
+	.essentiel li::marker {
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	.reperes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+		gap: 1.5rem;
+		border-top: 1px solid var(--rule);
+		padding-top: 1.25rem;
+	}
+
+	.reperes-titre {
+		color: var(--ink-3);
+		margin: 0 0 0.4rem;
+		font-size: 1rem;
+	}
+
+	.reperes ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		font-size: 1.1rem;
+	}
+
+	.reperes li {
+		margin-bottom: 0.2rem;
+	}
+
+	.dates {
+		color: var(--ink-3);
+		font-size: 0.9rem;
+		margin-left: 0.35rem;
+		font-variant-numeric: lining-nums;
+	}
+
+	.sujets {
+		border-top: 1px solid var(--rule);
+	}
+
+	.sujet {
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.sujet summary {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		padding: 1rem 0;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	.sujet summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.sujet-intitule {
+		font-family: var(--font-display);
+		font-size: 1.45rem;
+		font-style: italic;
+		line-height: 1.25;
+	}
+
+	.sujet-intitule::before {
+		content: '« ';
+		color: var(--gold);
+	}
+
+	.sujet-intitule::after {
+		content: ' »';
+		color: var(--gold);
+	}
+
+	.sujet-voir {
+		color: var(--oxblood);
+		font-size: 1rem;
+		white-space: nowrap;
+	}
+
+	.sujet[open] .sujet-voir::after {
+		content: ' ↑';
+	}
+
+	.sujet-corps {
+		padding: 0 0 1.25rem;
+		font-size: 1.12rem;
+	}
+
+	.sujet-corps > p {
+		margin: 0 0 0.75rem;
+		color: var(--ink-2);
+	}
+
+	.plan {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.plan li {
+		display: grid;
+		grid-template-columns: 2rem 1fr;
+		margin-bottom: 0.5rem;
+	}
+
+	.plan-num {
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	.fin-lecon {
+		border-top: 1px solid var(--rule-2);
+		padding-top: 2rem;
+	}
+
+	.voisines {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+		margin-top: 2.5rem;
+	}
+
+	.voisine {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		text-decoration: none;
+		color: var(--ink-3);
+		padding: 0.9rem 1rem;
+		border: 1px solid var(--rule);
+		transition: border-color 0.15s;
+	}
+
+	.voisine:hover {
+		border-color: var(--gold);
+	}
+
+	.voisine.suiv {
+		grid-column: 2;
+		text-align: right;
+	}
+
+	.voisine-titre {
+		font-family: var(--font-display);
+		font-size: 1.45rem;
+		color: var(--ink);
+		line-height: 1.2;
+	}
+
+	@media (max-width: 40rem) {
+		.voisines {
+			grid-template-columns: 1fr;
+		}
+		.voisine.suiv {
+			grid-column: 1;
+		}
+	}
+</style>

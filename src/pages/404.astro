@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page introuvable">
+	<div class="vide">
+		<p class="sc">Erreur 404</p>
+		<h1>Page introuvable</h1>
+		<span class="fleuron" aria-hidden="true">❦</span>
+		<p class="texte">« Je sais que je ne sais rien », disait Socrate. Nous ne savons pas non plus où se trouve cette page.</p>
+		<a class="btn" href="/">Revenir à la table des matières</a>
+	</div>
+</Base>
+
+<style>
+	.vide {
+		text-align: center;
+		padding: 6rem 1.5rem;
+		max-width: 36rem;
+		margin: 0 auto;
+	}
+	.sc {
+		color: var(--gold);
+		letter-spacing: 0.16em;
+		margin: 0 0 0.6rem;
+	}
+	h1 {
+		font-size: 3.4rem;
+		margin: 0;
+	}
+	.texte {
+		font-style: italic;
+		color: var(--ink-2);
+		font-size: 1.25rem;
+		margin: 0 0 2rem;
+	}
+</style>

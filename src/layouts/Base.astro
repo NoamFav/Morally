@@ -1,0 +1,59 @@
+---
+import { Font } from 'astro:assets';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title, description = 'Cours, fiches, cartes et quiz pour réviser la philosophie du baccalauréat.' } = Astro.props;
+const fullTitle = title ? `${title} · Morally` : 'Morally · Philosophie, terminale';
+---
+
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{fullTitle}</title>
+		<meta name="theme-color" content="#f6f1e7" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)" />
+		<script is:inline>
+			try {
+				const t = localStorage.getItem('morally:theme');
+				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+			} catch {}
+		</script>
+		<Font cssVariable="--font-text" preload />
+		<Font cssVariable="--font-display" preload />
+	</head>
+	<body>
+		<a class="skip sr-only" href="#contenu">Aller au contenu</a>
+		<SiteHeader />
+		<main id="contenu">
+			<slot />
+		</main>
+		<SiteFooter />
+	</body>
+</html>
+
+<style>
+	.skip:focus {
+		position: fixed;
+		top: 0.5rem;
+		left: 0.5rem;
+		width: auto;
+		height: auto;
+		clip: auto;
+		padding: 0.5rem 1rem;
+		background: var(--paper);
+		border: 1px solid var(--rule-2);
+		z-index: 100;
+	}
+</style>

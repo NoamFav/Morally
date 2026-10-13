@@ -1,0 +1,107 @@
+---
+interface Props {
+	notion: string;
+	titre: string;
+}
+const { notion, titre } = Astro.props;
+---
+
+<m-notes data-notion={notion} class="notes">
+	<label for={`notes-${notion}`} class="sr-only">Mes notes sur {titre}</label>
+	<textarea
+		id={`notes-${notion}`}
+		rows="7"
+		placeholder="Vos idées, vos exemples personnels, les références que vous voulez retenir…"
+		spellcheck="true"></textarea>
+	<p class="notes-etat" aria-live="polite"><span data-etat>Enregistré dans ce navigateur.</span> <a href="/carnet">Ouvrir le carnet</a></p>
+</m-notes>
+
+<script>
+	import { charger, modifier } from '../../scripts/store';
+
+	class MNotes extends HTMLElement {
+		minuteur?: number;
+
+		connectedCallback() {
+			const zone = this.querySelector('textarea')!;
+			const etat = this.querySelector<HTMLElement>('[data-etat]')!;
+			const notion = this.dataset.notion!;
+			zone.value = charger().notes[notion]?.texte ?? '';
+			this.ajuster(zone);
+			zone.addEventListener('input', () => {
+				this.ajuster(zone);
+				etat.textContent = 'Modification…';
+				clearTimeout(this.minuteur);
+				this.minuteur = window.setTimeout(() => {
+					modifier((d) => {
+						const texte = zone.value;
+						if (texte.trim()) d.notes[notion] = { texte, maj: new Date().toISOString() };
+						else delete d.notes[notion];
+					});
+					etat.textContent = 'Enregistré dans ce navigateur.';
+				}, 500);
+			});
+		}
+
+		ajuster(zone: HTMLTextAreaElement) {
+			zone.style.height = 'auto';
+			zone.style.height = `${Math.max(zone.scrollHeight, 180)}px`;
+		}
+	}
+
+	if (!customElements.get('m-notes')) customElements.define('m-notes', MNotes);
+</script>
+
+<style>
+	.notes {
+		display: block;
+		max-width: 36rem;
+	}
+
+	textarea {
+		width: 100%;
+		font: inherit;
+		font-size: 1.15rem;
+		line-height: 1.9rem;
+		color: var(--ink);
+		background-color: var(--paper-2);
+		background-image: repeating-linear-gradient(
+			to bottom,
+			transparent 0,
+			transparent calc(1.9rem - 1px),
+			color-mix(in srgb, var(--rule) 70%, transparent) calc(1.9rem - 1px),
+			color-mix(in srgb, var(--rule) 70%, transparent) 1.9rem
+		);
+		background-attachment: local;
+		background-position: 0 0.75rem;
+		border: 1px solid var(--rule);
+		border-left: 2px solid var(--oxblood);
+		padding: 0.75rem 1rem;
+		resize: vertical;
+		min-height: 11rem;
+	}
+
+	textarea::placeholder {
+		color: var(--ink-3);
+		font-style: italic;
+	}
+
+	textarea:focus {
+		outline: none;
+		border-color: var(--rule-2);
+		border-left-color: var(--oxblood);
+	}
+
+	.notes-etat {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.95rem;
+		color: var(--ink-3);
+		font-style: italic;
+		margin: 0.4rem 0 0;
+	}
+
+	.notes-etat a {
+		font-style: normal;
+	}
+</style>

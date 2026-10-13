@@ -1,11 +1,418 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { notionsTriees, PARCOURS, romain, idCarte } from '../lib/programme';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const notions = await notionsTriees();
+const [auteurs, courants, lexique, methode] = await Promise.all([
+	getCollection('auteurs'),
+	getCollection('courants'),
+	getCollection('lexique'),
+	getCollection('methode'),
+]);
+
+const cartesParNotion = Object.fromEntries(
+	notions.map((n) => [n.id, n.data.cartes.map((c) => idCarte(n.id, c.recto))]),
+);
+const titres = Object.fromEntries(notions.map((n) => [n.id, n.data.titre]));
+const totalSujets = notions.reduce((s, n) => s + n.data.sujets.length, 0);
+const totalLectures = notions.reduce((s, n) => s + n.data.lectures.length, 0);
+
+const annexes = [
+	{ href: '/lexique', titre: 'Lexique', desc: `${lexique.length} définitions, de l’aliénation à la volonté générale.` },
+	{ href: '/auteurs', titre: 'Auteurs', desc: `${auteurs.length} philosophes, leurs thèses, leurs œuvres, leurs citations.` },
+	{ href: '/courants', titre: 'Courants', desc: `${courants.length} écoles de pensée, du platonisme à l’existentialisme.` },
+	{ href: '/methode', titre: 'Méthode', desc: `Dissertation et explication de texte, pas à pas.` },
+	{ href: '/sujets', titre: 'Sujets', desc: `${totalSujets} sujets de dissertation avec des pistes de plan.` },
+	{ href: '/lectures', titre: 'Lectures', desc: `${totalLectures} œuvres, études et articles pour approfondir.` },
+];
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<Base>
+	<header class="frontispice">
+		<p class="sc sur">Cours de philosophie · classe de terminale</p>
+		<h1>Morally</h1>
+		<span class="fleuron" aria-hidden="true">❦</span>
+		<p class="sous">
+			{notions.length === 19 ? 'Dix-neuf' : notions.length} leçons pour le baccalauréat, avec leurs cartes, leurs
+			questionnaires et leurs sujets.
+		</p>
+	</header>
+
+	<div class="wrap-narrow">
+		<aside class="reprendre no-print" data-reprendre hidden aria-label="Reprendre">
+			<a class="reprendre-lien" data-derniere href="/">
+				<span class="sc">Reprendre la lecture</span>
+				<span class="reprendre-titre" data-derniere-titre></span>
+			</a>
+			<a class="reprendre-lien" href="/revisions">
+				<span class="sc">Révisions du jour</span>
+				<span class="reprendre-titre" data-dues></span>
+			</a>
+		</aside>
+
+		<section class="table" aria-labelledby="table-titre">
+			<h2 id="table-titre" class="sc table-titre">Table des matières</h2>
+
+			{
+				PARCOURS.map((p) => {
+					const lecons = notions.filter((n) => n.data.parcours === p.id);
+					if (!lecons.length) return null;
+					return (
+						<section class="livre" id={`livre-${p.livre}`}>
+							<header class="livre-tete">
+								<p class="sc livre-num">Livre {romain(p.livre)}</p>
+								<h3>{p.titre}</h3>
+								<p class="livre-resume">{p.resume}</p>
+							</header>
+							<ol class="lecons">
+								{lecons.map((n) => (
+									<li>
+										<a href={`/notions/${n.id}`} class="lecon-ligne" data-notion={n.id}>
+											<span class="lecon-num">{romain(n.data.numero)}</span>
+											<span class="lecon-texte">
+												<span class="lecon-titre">{n.data.titre}</span>
+												<span class="lecon-question">{n.data.question}</span>
+											</span>
+											<span class="lecon-points" aria-hidden="true" />
+											<span class="lecon-etat" data-etat />
+										</a>
+									</li>
+								))}
+							</ol>
+						</section>
+					);
+				})
+			}
+		</section>
+
+		<div class="filet" aria-hidden="true">❦</div>
+
+		<section class="annexes" aria-labelledby="annexes-titre">
+			<h2 id="annexes-titre" class="sc table-titre">Annexes</h2>
+			<ul>
+				{
+					annexes.map((a) => (
+						<li>
+							<a href={a.href}>
+								<span class="annexe-titre">{a.titre}</span>
+								<span class="annexe-desc">{a.desc}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+	</div>
+
+	<script type="application/json" id="donnees-accueil" set:html={JSON.stringify({ cartesParNotion, titres })} />
+</Base>
+
+<script>
+	import { charger, estDue } from '../scripts/store';
+
+	const { cartesParNotion, titres } = JSON.parse(
+		document.getElementById('donnees-accueil')!.textContent!,
+	) as { cartesParNotion: Record<string, string[]>; titres: Record<string, string> };
+
+	function maj() {
+		const d = charger();
+		let dues = 0;
+		let vues = 0;
+
+		document.querySelectorAll<HTMLAnchorElement>('[data-notion]').forEach((a) => {
+			const id = a.dataset.notion!;
+			const n = d.notions[id];
+			const ids = cartesParNotion[id] ?? [];
+			const due = ids.filter((c) => d.cartes[c] && estDue(d.cartes[c])).length;
+			if (ids.some((c) => d.cartes[c])) vues++;
+			dues += due;
+			const etat = a.querySelector<HTMLElement>('[data-etat]')!;
+			const parts: string[] = [];
+			if (n?.quiz) parts.push(`${n.quiz.score}/${n.quiz.total}`);
+			if (n?.lue) parts.push('lue');
+			else if (n?.visite) parts.push('entamée');
+			etat.textContent = parts.join(' · ');
+			a.classList.toggle('est-lue', !!n?.lue);
+		});
+
+		const bloc = document.querySelector<HTMLElement>('[data-reprendre]')!;
+		if (d.derniere && titres[d.derniere]) {
+			bloc.hidden = false;
+			const lien = bloc.querySelector<HTMLAnchorElement>('[data-derniere]')!;
+			lien.href = `/notions/${d.derniere}`;
+			bloc.querySelector('[data-derniere-titre]')!.textContent = titres[d.derniere];
+			bloc.querySelector('[data-dues]')!.textContent = dues
+				? `${dues} carte${dues > 1 ? 's' : ''} à revoir`
+				: vues
+					? 'Tout est à jour'
+					: 'Commencer les cartes';
+		}
+	}
+
+	maj();
+	window.addEventListener('pageshow', maj);
+</script>
+
+<style>
+	.frontispice {
+		text-align: center;
+		padding: 5.5rem 1.5rem 3rem;
+	}
+
+	.sur {
+		color: var(--gold);
+		letter-spacing: 0.18em;
+		margin: 0 0 1rem;
+		font-size: 1.1rem;
+	}
+
+	h1 {
+		font-size: clamp(4.5rem, 14vw, 8.5rem);
+		font-style: italic;
+		font-weight: 500;
+		line-height: 0.9;
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+
+	h1::after {
+		content: '.';
+		color: var(--gold);
+	}
+
+	.frontispice .fleuron {
+		margin: 1.5rem 0;
+	}
+
+	.sous {
+		font-style: italic;
+		font-size: 1.35rem;
+		color: var(--ink-2);
+		max-width: 30rem;
+		margin: 0 auto;
+	}
+
+	/* ——— Reprendre ——— */
+
+	.reprendre {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		border-top: 1px solid var(--rule);
+		border-bottom: 1px solid var(--rule);
+		margin-bottom: 3.5rem;
+	}
+
+	.reprendre-lien {
+		display: flex;
+		flex-direction: column;
+		padding: 0.9rem 1rem;
+		text-decoration: none;
+		color: var(--ink-3);
+		transition: background 0.15s;
+	}
+
+	.reprendre-lien + .reprendre-lien {
+		border-left: 1px solid var(--rule);
+	}
+
+	.reprendre-lien:hover {
+		background: var(--paper-2);
+	}
+
+	.reprendre-titre {
+		font-family: var(--font-display);
+		font-size: 1.45rem;
+		color: var(--ink);
+		line-height: 1.2;
+	}
+
+	.reprendre-lien:hover .reprendre-titre::after {
+		content: ' →';
+		color: var(--gold);
+	}
+
+	/* ——— Table des matières ——— */
+
+	.table-titre {
+		text-align: center;
+		font-family: var(--font-text);
+		font-weight: 500;
+		font-size: 1.2rem;
+		letter-spacing: 0.22em;
+		color: var(--ink-2);
+		margin: 0 0 2.5rem;
+	}
+
+	.livre {
+		margin-bottom: 3.5rem;
+	}
+
+	.livre-tete {
+		text-align: center;
+		margin-bottom: 1.25rem;
+	}
+
+	.livre-num {
+		color: var(--gold);
+		margin: 0;
+		letter-spacing: 0.16em;
+	}
+
+	.livre-tete h3 {
+		font-size: 2.3rem;
+		margin: 0.1rem 0 0.35rem;
+	}
+
+	.livre-resume {
+		font-style: italic;
+		color: var(--ink-2);
+		margin: 0;
+		font-size: 1.1rem;
+	}
+
+	.lecons {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		border-top: 1px solid var(--rule);
+	}
+
+	.lecon-ligne {
+		display: grid;
+		grid-template-columns: 3rem minmax(0, max-content) minmax(1rem, 1fr) auto;
+		align-items: baseline;
+		gap: 0.6rem;
+		padding: 0.85rem 0.25rem;
+		border-bottom: 1px solid var(--rule);
+		text-decoration: none;
+		color: var(--ink);
+		transition: background 0.15s;
+	}
+
+	.lecon-ligne:hover {
+		background: var(--paper-2);
+	}
+
+	.lecon-num {
+		font-family: var(--font-display);
+		font-weight: 600;
+		color: var(--gold);
+		font-size: 1.15rem;
+		text-align: right;
+		padding-right: 0.4rem;
+	}
+
+	.lecon-texte {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.lecon-titre {
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 500;
+		line-height: 1.15;
+	}
+
+	.lecon-question {
+		font-style: italic;
+		color: var(--ink-3);
+		font-size: 1.02rem;
+		line-height: 1.35;
+		margin-top: 0.1rem;
+	}
+
+	.lecon-points {
+		border-bottom: 1.5px dotted var(--rule-2);
+		align-self: center;
+		min-width: 1rem;
+		transform: translateY(-0.3rem);
+	}
+
+	.lecon-etat {
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.06em;
+		color: var(--ink-3);
+		font-size: 1rem;
+		min-width: 1rem;
+		text-align: right;
+		font-variant-numeric: lining-nums;
+	}
+
+	.est-lue .lecon-etat {
+		color: var(--vert);
+	}
+
+	/* ——— Annexes ——— */
+
+	.annexes ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		border-top: 1px solid var(--rule);
+	}
+
+	.annexes li {
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.annexes li:nth-child(odd) {
+		border-right: 1px solid var(--rule);
+	}
+
+	.annexes a {
+		display: flex;
+		flex-direction: column;
+		padding: 1rem 1.1rem 1.1rem;
+		text-decoration: none;
+		height: 100%;
+		transition: background 0.15s;
+	}
+
+	.annexes a:hover {
+		background: var(--paper-2);
+	}
+
+	.annexe-titre {
+		font-family: var(--font-display);
+		font-size: 1.55rem;
+		color: var(--ink);
+		line-height: 1.2;
+	}
+
+	.annexe-desc {
+		color: var(--ink-2);
+		font-size: 1.02rem;
+		line-height: 1.4;
+	}
+
+	@media (max-width: 40rem) {
+		.frontispice {
+			padding: 3.5rem 1rem 2rem;
+		}
+		.lecon-ligne {
+			grid-template-columns: 2.3rem 1fr auto;
+		}
+		.lecon-points {
+			display: none;
+		}
+		.lecon-titre {
+			font-size: 1.4rem;
+		}
+		.annexes ul,
+		.reprendre {
+			grid-template-columns: 1fr;
+		}
+		.annexes li:nth-child(odd) {
+			border-right: 0;
+		}
+		.reprendre-lien + .reprendre-lien {
+			border-left: 0;
+			border-top: 1px solid var(--rule);
+		}
+	}
+</style>

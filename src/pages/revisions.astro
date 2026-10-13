@@ -1,0 +1,226 @@
+---
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import Cartes from '../components/exercices/Cartes.astro';
+import { notionsTriees, PARCOURS, idCarte, typoProfond } from '../lib/programme';
+
+const notions = await notionsTriees();
+const cartes = notions.flatMap((n) =>
+	n.data.cartes.map((c) => ({
+		...typoProfond(c),
+		id: idCarte(n.id, c.recto),
+		notion: n.id,
+		titreNotion: n.data.titre,
+		parcours: n.data.parcours,
+	})),
+);
+---
+
+<Base title="Révisions" description="Réviser les cartes de toutes les notions, au bon moment.">
+	<EnTete
+		sur="Entraînement"
+		titre="Révisions"
+		intro="Les cartes de toutes les leçons, mêlées. Celles que vous savez reviennent de plus en plus tard ; celles que vous manquez reviennent vite."
+	/>
+
+	<div class="wrap-narrow">
+		<div class="bilan" data-bilan>
+			<div><span class="chiffre" data-dues>—</span><span class="sc">à réviser aujourd’hui</span></div>
+			<div><span class="chiffre" data-maitrisees>—</span><span class="sc">maîtrisées</span></div>
+			<div><span class="chiffre">{cartes.length}</span><span class="sc">cartes en tout</span></div>
+		</div>
+
+		<div class="selection no-print">
+			<div class="filtres" role="group" aria-label="Choisir un livre">
+				<button type="button" class="filtre" aria-pressed="true" data-parcours="tout">Tout le programme</button>
+				{
+					PARCOURS.map((p) => (
+						<button type="button" class="filtre" aria-pressed="false" data-parcours={p.id}>
+							{p.titre}
+						</button>
+					))
+				}
+			</div>
+			<label class="notion-choix">
+				<span class="sr-only">Ou une seule notion</span>
+				<select data-notion>
+					<option value="">Ou une seule notion…</option>
+					{notions.map((n) => <option value={n.id}>{n.data.titre}</option>)}
+				</select>
+			</label>
+		</div>
+
+		<Cartes cartes={cartes} mode="revision" />
+
+		<p class="tout-revoir no-print">
+			<button type="button" class="btn btn-lien" data-tout>Réviser toute la sélection, même les cartes à jour</button>
+		</p>
+
+		<aside class="explication">
+			<p class="sc">Comment ça marche</p>
+			<p>
+				Chaque carte avance d’une case quand vous la savez : elle revient alors 1, 3, 7, 16 puis 35 jours plus tard.
+				Si vous la manquez, elle retourne à la première case et revient le jour même. C’est le principe des
+				<em>boîtes de Leitner</em>, une méthode de répétition espacée. Une carte est « maîtrisée » à partir de la
+				troisième case.
+			</p>
+		</aside>
+	</div>
+
+	<script type="application/json" id="toutes-cartes" set:html={JSON.stringify(cartes)} />
+</Base>
+
+<script>
+	import { charger, estDue, estMaitrisee } from '../scripts/store';
+
+	interface Carte {
+		id: string;
+		notion: string;
+		parcours: string;
+	}
+
+	const toutes: Carte[] = JSON.parse(document.getElementById('toutes-cartes')!.textContent!);
+	const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-parcours]')];
+	const select = document.querySelector<HTMLSelectElement>('[data-notion]')!;
+	const paquet = document.querySelector('m-cartes') as HTMLElement & { demarrer(c: Carte[]): void };
+	let parcours = 'tout';
+
+	const selection = () =>
+		toutes.filter((c) =>
+			select.value ? c.notion === select.value : parcours === 'tout' || c.parcours === parcours,
+		);
+
+	function bilan() {
+		const d = charger();
+		const s = selection();
+		document.querySelector('[data-dues]')!.textContent = String(s.filter((c) => estDue(d.cartes[c.id])).length);
+		document.querySelector('[data-maitrisees]')!.textContent = String(
+			s.filter((c) => estMaitrisee(d.cartes[c.id])).length,
+		);
+	}
+
+	function appliquer() {
+		window.dispatchEvent(new CustomEvent('morally:filtre', { detail: selection() }));
+		bilan();
+	}
+
+	boutons.forEach((b) =>
+		b.addEventListener('click', () => {
+			parcours = b.dataset.parcours!;
+			select.value = '';
+			boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+			appliquer();
+		}),
+	);
+	select.addEventListener('change', () => {
+		boutons.forEach((x) => x.setAttribute('aria-pressed', String(!select.value && x.dataset.parcours === parcours)));
+		appliquer();
+	});
+	document.querySelector('[data-tout]')!.addEventListener('click', () => paquet.demarrer(selection()));
+	window.addEventListener('morally:maj', bilan);
+	bilan();
+</script>
+
+<style>
+	.bilan {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		border-top: 1px solid var(--rule);
+		border-bottom: 1px solid var(--rule);
+		margin-bottom: 1.75rem;
+		text-align: center;
+	}
+
+	.bilan > div {
+		display: flex;
+		flex-direction: column;
+		padding: 0.9rem 0.5rem;
+	}
+
+	.bilan > div + div {
+		border-left: 1px solid var(--rule);
+	}
+
+	.chiffre {
+		font-family: var(--font-display);
+		font-size: 2.4rem;
+		line-height: 1;
+		color: var(--gold);
+		font-variant-numeric: lining-nums;
+	}
+
+	.bilan .sc {
+		color: var(--ink-3);
+		font-size: 0.98rem;
+	}
+
+	.selection {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-bottom: 1.75rem;
+	}
+
+	.filtres {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+	}
+
+	.filtre {
+		appearance: none;
+		font: inherit;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.08em;
+		font-size: 1.02rem;
+		color: var(--ink-2);
+		background: none;
+		border: 1px solid var(--rule);
+		border-radius: 99px;
+		padding: 0.15rem 0.85rem 0.25rem;
+		cursor: pointer;
+	}
+
+	.filtre[aria-pressed='true'] {
+		background: var(--ink);
+		border-color: var(--ink);
+		color: var(--paper);
+	}
+
+	select {
+		font: inherit;
+		font-size: 1.05rem;
+		color: var(--ink);
+		background: var(--paper);
+		border: 1px solid var(--rule);
+		border-radius: 3px;
+		padding: 0.3rem 0.5rem;
+		max-width: 100%;
+	}
+
+	.tout-revoir {
+		margin: 1rem 0 3rem;
+	}
+
+	.explication {
+		border-top: 1px solid var(--rule);
+		padding-top: 1.25rem;
+		color: var(--ink-2);
+		font-size: 1.05rem;
+	}
+
+	.explication .sc {
+		color: var(--gold);
+		margin: 0 0 0.4rem;
+	}
+
+	.explication p {
+		margin: 0 0 0.5rem;
+	}
+
+	@media (max-width: 40rem) {
+		.chiffre {
+			font-size: 1.9rem;
+		}
+	}
+</style>

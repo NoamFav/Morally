@@ -1,0 +1,199 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { notionsTriees, typoProfond } from '../../lib/programme';
+import '../../styles/lecon.css';
+
+export async function getStaticPaths() {
+	const courants = (await getCollection('courants')).sort((a, b) => a.data.ordre - b.data.ordre);
+	return courants.map((courant, i) => ({
+		params: { id: courant.id },
+		props: { courant, precedent: courants[i - 1], suivant: courants[i + 1] },
+	}));
+}
+
+interface Props {
+	courant: CollectionEntry<'courants'>;
+	precedent?: CollectionEntry<'courants'>;
+	suivant?: CollectionEntry<'courants'>;
+}
+
+const { courant, precedent, suivant } = Astro.props;
+const data = typoProfond(courant.data);
+const { Content } = await render(courant);
+const figures = (await getCollection('auteurs')).filter((a) =>
+	a.data.courants.some((c) => c.id === courant.id),
+);
+const notions = (await notionsTriees()).filter((n) => n.data.courants.some((c) => c.id === courant.id));
+---
+
+<Base title={data.nom} description={data.resume}>
+	<article class="wrap-narrow fiche-courant">
+		<header>
+			<p class="sc sur"><a href="/courants">Courants</a> · {data.periode}</p>
+			<h1>{data.nom}</h1>
+			<span class="fleuron" aria-hidden="true">❦</span>
+			<p class="resume">{data.resume}</p>
+		</header>
+
+		<section>
+			<h2 class="sc">Thèses principales</h2>
+			<ol class="theses">
+				{data.theses.map((t) => <li>{t}</li>)}
+			</ol>
+		</section>
+
+		<section class="prose sans-numeros corps">
+			<Content />
+		</section>
+
+		<div class="colonnes">
+			{
+				figures.length > 0 && (
+					<section>
+						<h2 class="sc">Figures</h2>
+						<ul class="liens">
+							{figures.map((a) => (
+								<li>
+									<a href={`/auteurs/${a.id}`}>{a.data.nom}</a> <span class="dates">{a.data.dates}</span>
+								</li>
+							))}
+						</ul>
+					</section>
+				)
+			}
+			{
+				notions.length > 0 && (
+					<section>
+						<h2 class="sc">Leçons</h2>
+						<ul class="liens">
+							{notions.map((n) => (
+								<li>
+									<a href={`/notions/${n.id}`}>{n.data.titre}</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				)
+			}
+		</div>
+
+		<nav class="voisins" aria-label="Courants voisins">
+			{precedent ? <a href={`/courants/${precedent.id}`}>← {precedent.data.nom}</a> : <span />}
+			{suivant && <a href={`/courants/${suivant.id}`}>{suivant.data.nom} →</a>}
+		</nav>
+	</article>
+</Base>
+
+<style>
+	.fiche-courant {
+		padding-top: 4.5rem;
+	}
+
+	header {
+		text-align: center;
+		margin-bottom: 2.5rem;
+	}
+
+	.sur {
+		color: var(--gold);
+		margin: 0 0 0.6rem;
+		letter-spacing: 0.12em;
+	}
+
+	.sur a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	h1 {
+		font-size: clamp(2.8rem, 7vw, 4rem);
+		margin: 0;
+		line-height: 1.02;
+	}
+
+	.resume {
+		font-style: italic;
+		font-size: 1.3rem;
+		color: var(--ink-2);
+		margin: 0;
+	}
+
+	h2.sc {
+		font-family: var(--font-text);
+		font-size: 1.05rem;
+		color: var(--gold);
+		letter-spacing: 0.14em;
+		margin: 0 0 0.75rem;
+		font-weight: 500;
+	}
+
+	section {
+		margin-bottom: 2.5rem;
+	}
+
+	.theses {
+		padding-left: 1.5rem;
+		margin: 0;
+		font-size: 1.18rem;
+	}
+
+	.theses li {
+		margin-bottom: 0.45rem;
+		padding-left: 0.3rem;
+	}
+
+	.theses li::marker {
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	.corps {
+		font-size: 1.18rem;
+	}
+
+	.colonnes {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+		border-top: 1px solid var(--rule);
+		padding-top: 1.75rem;
+	}
+
+	.liens {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.liens li {
+		padding: 0.15rem 0;
+		font-size: 1.12rem;
+	}
+
+	.dates {
+		color: var(--ink-3);
+		font-size: 0.92rem;
+		font-variant-numeric: lining-nums;
+	}
+
+	.voisins {
+		display: flex;
+		justify-content: space-between;
+		border-top: 1px solid var(--rule);
+		padding-top: 1.25rem;
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+	}
+
+	.voisins a {
+		text-decoration: none;
+	}
+
+	@media (max-width: 40rem) {
+		.colonnes {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

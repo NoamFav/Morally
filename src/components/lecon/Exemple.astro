@@ -1,0 +1,11 @@
+---
+interface Props {
+	titre?: string;
+}
+const { titre = 'Exemple' } = Astro.props;
+---
+
+<aside class="exemple">
+	<p class="exemple-titre">{titre}</p>
+	<div><slot /></div>
+</aside>

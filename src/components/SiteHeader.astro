@@ -1,0 +1,242 @@
+---
+const liens = [
+	{ href: '/', label: 'Leçons' },
+	{ href: '/revisions', label: 'Révisions' },
+	{ href: '/lexique', label: 'Lexique' },
+	{ href: '/auteurs', label: 'Auteurs' },
+	{ href: '/courants', label: 'Courants' },
+	{ href: '/methode', label: 'Méthode' },
+	{ href: '/carnet', label: 'Carnet' },
+];
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const actif = (href: string) =>
+	href === '/' ? path === '/' || path.startsWith('/notions') : path.startsWith(href);
+---
+
+<header class="site-header">
+	<div class="bar">
+		<a href="/" class="marque" aria-label="Morally, accueil">
+			<span class="marque-nom">Morally</span>
+		</a>
+
+		<nav aria-label="Navigation principale" class="nav-large">
+			<ul>
+				{
+					liens.map((l) => (
+						<li>
+							<a href={l.href} aria-current={actif(l.href) ? 'page' : undefined}>
+								{l.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+
+		<div class="outils">
+			<button type="button" class="theme" data-theme-toggle aria-label="Changer de thème">
+				<span class="jour">Jour</span><span class="nuit">Nuit</span>
+			</button>
+			<details class="nav-petite">
+				<summary aria-label="Menu">Menu</summary>
+				<nav aria-label="Navigation principale (mobile)">
+					<ul>
+						{
+							liens.map((l) => (
+								<li>
+									<a href={l.href} aria-current={actif(l.href) ? 'page' : undefined}>
+										{l.label}
+									</a>
+								</li>
+							))
+						}
+					</ul>
+				</nav>
+			</details>
+		</div>
+	</div>
+</header>
+
+<script>
+	const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+	btn?.addEventListener('click', () => {
+		const root = document.documentElement;
+		const sombre =
+			root.dataset.theme === 'dark' ||
+			(!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+		const suivant = sombre ? 'light' : 'dark';
+		root.dataset.theme = suivant;
+		try {
+			localStorage.setItem('morally:theme', suivant);
+		} catch {}
+	});
+</script>
+
+<style>
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background: color-mix(in srgb, var(--paper) 92%, transparent);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.bar {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 0.6rem 1.5rem;
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+	}
+
+	.marque {
+		text-decoration: none;
+		color: var(--ink);
+		display: flex;
+		align-items: baseline;
+		gap: 0.4rem;
+	}
+
+	.marque-nom {
+		font-family: var(--font-display);
+		font-size: 1.65rem;
+		font-weight: 600;
+		font-style: italic;
+		letter-spacing: 0.01em;
+		line-height: 1;
+	}
+
+	.marque-nom::after {
+		content: '.';
+		color: var(--gold);
+	}
+
+	.nav-large {
+		flex: 1;
+	}
+
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.nav-large ul {
+		display: flex;
+		gap: 1.4rem;
+		flex-wrap: wrap;
+	}
+
+	nav a {
+		color: var(--ink-2);
+		text-decoration: none;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.08em;
+		font-size: 1.05rem;
+		padding: 0.2rem 0;
+		border-bottom: 1px solid transparent;
+	}
+
+	nav a:hover {
+		color: var(--ink);
+	}
+
+	nav a[aria-current='page'] {
+		color: var(--ink);
+		border-bottom-color: var(--gold);
+	}
+
+	.outils {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-left: auto;
+	}
+
+	.theme,
+	summary {
+		appearance: none;
+		font: inherit;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.08em;
+		font-size: 1rem;
+		color: var(--ink-2);
+		background: none;
+		border: 1px solid var(--rule);
+		border-radius: 3px;
+		padding: 0.15rem 0.6rem 0.25rem;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.theme:hover,
+	summary:hover {
+		color: var(--ink);
+		border-color: var(--rule-2);
+	}
+
+	.theme .jour {
+		display: none;
+	}
+
+	:global(:root[data-theme='dark']) .theme .jour {
+		display: inline;
+	}
+	:global(:root[data-theme='dark']) .theme .nuit {
+		display: none;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme='light'])) .theme .jour {
+			display: inline;
+		}
+		:global(:root:not([data-theme='light'])) .theme .nuit {
+			display: none;
+		}
+	}
+
+	.nav-petite {
+		display: none;
+		position: relative;
+	}
+
+	.nav-petite nav {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 0.6rem);
+		background: var(--paper);
+		border: 1px solid var(--rule);
+		padding: 0.75rem 1.25rem;
+		min-width: 12rem;
+		box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.25);
+	}
+
+	.nav-petite li a {
+		display: block;
+		padding: 0.35rem 0;
+		font-size: 1.15rem;
+	}
+
+	@media (max-width: 62rem) {
+		.nav-large {
+			display: none;
+		}
+		.nav-petite {
+			display: block;
+		}
+	}
+
+	@media (max-width: 40rem) {
+		.bar {
+			padding: 0.55rem 1rem;
+		}
+	}
+</style>

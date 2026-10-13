@@ -1,0 +1,65 @@
+---
+import { typo } from '../lib/typo.mjs';
+const annee = new Date().getFullYear();
+const devise = typo('« On n’apprend pas la philosophie, on apprend à philosopher. »');
+---
+
+<footer class="site-footer">
+	<div class="wrap">
+		<p class="devise">{devise}<span class="sc"> — d’après Kant</span></p>
+		<div class="bas">
+			<span><em>Morally</em> · cours de philosophie, terminale · {annee}</span>
+			<nav aria-label="Annexes">
+				<a href="/sujets">Sujets</a>
+				<a href="/lectures">Lectures</a>
+				<a href="/methode">Méthode</a>
+				<a href="/carnet">Carnet</a>
+			</nav>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		margin-top: 6rem;
+		border-top: 1px solid var(--rule);
+		padding: 2.5rem 0 3rem;
+		color: var(--ink-2);
+		font-size: 1rem;
+	}
+
+	.devise {
+		font-style: italic;
+		margin: 0 0 1.25rem;
+		color: var(--ink-2);
+	}
+
+	.devise .sc {
+		font-style: normal;
+		color: var(--ink-3);
+	}
+
+	.bas {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+		color: var(--ink-3);
+	}
+
+	nav {
+		display: flex;
+		gap: 1.25rem;
+	}
+
+	nav a {
+		color: var(--ink-2);
+		text-decoration: none;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.08em;
+	}
+
+	nav a:hover {
+		color: var(--oxblood);
+	}
+</style>

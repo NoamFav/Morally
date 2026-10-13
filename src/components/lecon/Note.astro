@@ -1,0 +1,5 @@
+---
+const id = `note-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<label for={id} class="sn-ref sn-num" aria-label="Note"></label><input type="checkbox" id={id} class="sn-toggle" /><span class="sidenote sn-numerotee"><slot /></span>

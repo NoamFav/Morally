@@ -1,0 +1,177 @@
+---
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import { notionsTriees, PARCOURS, romain, typoProfond } from '../lib/programme';
+
+const notions = (await notionsTriees()).map((n) => ({ ...n, data: typoProfond(n.data) }));
+const total = notions.reduce((s, n) => s + n.data.sujets.length, 0);
+---
+
+<Base title="Sujets de dissertation" description="Des sujets de dissertation par notion, avec leur enjeu et des pistes de plan.">
+	<EnTete
+		sur="Annexe"
+		titre="Sujets"
+		intro={`${total} sujets de dissertation. Cherchez votre problématique avant d’ouvrir les pistes.`}
+	>
+		<button type="button" class="btn hasard no-print" data-hasard>Tirer un sujet au hasard</button>
+	</EnTete>
+
+	<div class="wrap-narrow">
+		{
+			PARCOURS.map((p) => {
+				const ns = notions.filter((n) => n.data.parcours === p.id);
+				if (!ns.length) return null;
+				return (
+					<section class="livre">
+						<h2 class="sc">
+							Livre {romain(p.livre)} · {p.titre}
+						</h2>
+						{ns.map((n) => (
+							<div class="notion">
+								<h3>
+									<a href={`/notions/${n.id}#sujets`}>{n.data.titre}</a>
+								</h3>
+								{n.data.sujets.map((s) => (
+									<details class="sujet" data-sujet>
+										<summary>
+											<span class="intitule">{s.intitule}</span>
+										</summary>
+										<div class="corps">
+											<p>
+												<span class="sc">Enjeu.</span> {s.enjeu}
+											</p>
+											<ol class="plan">
+												{s.plan.map((x, i) => (
+													<li>
+														<span class="plan-num">{romain(i + 1)}.</span> <span set:html={x} />
+													</li>
+												))}
+											</ol>
+										</div>
+									</details>
+								))}
+							</div>
+						))}
+					</section>
+				);
+			})
+		}
+	</div>
+</Base>
+
+<script>
+	const sujets = [...document.querySelectorAll<HTMLDetailsElement>('[data-sujet]')];
+	document.querySelector('[data-hasard]')?.addEventListener('click', () => {
+		sujets.forEach((s) => (s.open = false));
+		const s = sujets[Math.floor(Math.random() * sujets.length)];
+		s.scrollIntoView({ block: 'center' });
+		s.classList.add('tire');
+		setTimeout(() => s.classList.remove('tire'), 1600);
+	});
+</script>
+
+<style>
+	.hasard {
+		margin-top: 1.5rem;
+	}
+
+	.livre {
+		margin-bottom: 3rem;
+	}
+
+	h2 {
+		font-family: var(--font-text);
+		font-weight: 500;
+		font-size: 1.1rem;
+		letter-spacing: 0.16em;
+		color: var(--gold);
+		text-align: center;
+		margin: 0 0 1.25rem;
+	}
+
+	.notion {
+		margin-bottom: 1.75rem;
+	}
+
+	h3 {
+		font-size: 1.8rem;
+		margin: 0 0 0.4rem;
+	}
+
+	h3 a {
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	h3 a:hover {
+		color: var(--oxblood);
+	}
+
+	.sujet {
+		border-top: 1px solid var(--rule);
+		transition: background 0.4s;
+	}
+
+	.sujet:last-child {
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.sujet.tire {
+		background: var(--gold-soft);
+	}
+
+	summary {
+		padding: 0.8rem 0;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.intitule {
+		font-style: italic;
+		font-size: 1.25rem;
+	}
+
+	.intitule::before {
+		content: '« ';
+		color: var(--gold);
+	}
+
+	.intitule::after {
+		content: ' »';
+		color: var(--gold);
+	}
+
+	.corps {
+		padding: 0 0 1rem 1rem;
+		border-left: 1px solid var(--gold);
+		margin-bottom: 1rem;
+		font-size: 1.1rem;
+	}
+
+	.corps > p {
+		color: var(--ink-2);
+		margin: 0 0 0.6rem;
+	}
+
+	.plan {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.plan li {
+		display: grid;
+		grid-template-columns: 2rem 1fr;
+		margin-bottom: 0.45rem;
+	}
+
+	.plan-num {
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+</style>

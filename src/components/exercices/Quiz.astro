@@ -1,0 +1,275 @@
+---
+interface Question {
+	question: string;
+	choix: string[];
+	bonne: number;
+	explication: string;
+}
+
+interface Props {
+	notion: string;
+	questions: Question[];
+}
+
+const { notion, questions } = Astro.props;
+const lettres = 'abcde';
+---
+
+<m-quiz data-notion={notion} class="quiz">
+	<ol class="questions">
+		{
+			questions.map((q, i) => (
+				<li class="question" data-bonne={q.bonne}>
+					<p class="q-intitule">{q.question}</p>
+					<div class="q-choix" role="group" aria-label={`Question ${i + 1}`}>
+						{q.choix.map((c, j) => (
+							<button type="button" class="choix" data-choix={j}>
+								<span class="choix-lettre">{lettres[j]}</span>
+								<span>{c}</span>
+							</button>
+						))}
+					</div>
+					<p class="q-explication" hidden>
+						<span class="verdict" />
+						{q.explication}
+					</p>
+				</li>
+			))
+		}
+	</ol>
+	<div class="quiz-bilan" data-bilan hidden>
+		<p class="bilan-score" data-score></p>
+		<p class="bilan-mot" data-mot></p>
+		<button type="button" class="btn" data-recommencer>Recommencer le questionnaire</button>
+	</div>
+	<p class="quiz-precedent" data-precedent hidden></p>
+</m-quiz>
+
+<script>
+	import { charger, modifier, aujourdhui } from '../../scripts/store';
+
+	class MQuiz extends HTMLElement {
+		reponses = new Map<number, boolean>();
+
+		connectedCallback() {
+			this.querySelectorAll<HTMLLIElement>('.question').forEach((li, i) => {
+				li.querySelectorAll<HTMLButtonElement>('.choix').forEach((b) => {
+					b.addEventListener('click', () => this.repondre(li, i, Number(b.dataset.choix)));
+				});
+			});
+			this.querySelector('[data-recommencer]')!.addEventListener('click', () => this.recommencer());
+			this.afficherPrecedent();
+		}
+
+		afficherPrecedent() {
+			const p = charger().notions[this.dataset.notion!]?.quiz;
+			const el = this.querySelector<HTMLElement>('[data-precedent]')!;
+			if (p) {
+				el.hidden = false;
+				el.textContent = `Dernier résultat : ${p.score} / ${p.total}, le ${new Date(p.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}.`;
+			}
+		}
+
+		repondre(li: HTMLLIElement, i: number, choix: number) {
+			if (this.reponses.has(i)) return;
+			const bonne = Number(li.dataset.bonne);
+			const juste = choix === bonne;
+			this.reponses.set(i, juste);
+			li.classList.add(juste ? 'juste' : 'faux');
+			li.querySelectorAll<HTMLButtonElement>('.choix').forEach((b) => {
+				const j = Number(b.dataset.choix);
+				b.disabled = true;
+				if (j === bonne) b.classList.add('est-bonne');
+				if (j === choix && !juste) b.classList.add('est-fausse');
+				if (j === choix) b.setAttribute('aria-pressed', 'true');
+			});
+			const exp = li.querySelector<HTMLElement>('.q-explication')!;
+			exp.querySelector('.verdict')!.textContent = juste ? 'Exact. ' : 'Non. ';
+			exp.hidden = false;
+			const total = this.querySelectorAll('.question').length;
+			if (this.reponses.size === total) this.bilan(total);
+		}
+
+		bilan(total: number) {
+			const score = [...this.reponses.values()].filter(Boolean).length;
+			const ratio = score / total;
+			this.querySelector('[data-score]')!.textContent = `${score} / ${total}`;
+			this.querySelector('[data-mot]')!.textContent =
+				ratio === 1
+					? 'Parfait. La leçon est acquise.'
+					: ratio >= 0.7
+						? 'Bien. Relisez les explications des erreurs.'
+						: ratio >= 0.4
+							? 'À consolider : reprenez les parties concernées, puis les cartes.'
+							: 'Relisez la leçon avant de retenter le questionnaire.';
+			this.querySelector<HTMLElement>('[data-bilan]')!.hidden = false;
+			modifier((d) => {
+				const n = (d.notions[this.dataset.notion!] ??= {});
+				n.quiz = { score, total, date: aujourdhui() };
+			});
+		}
+
+		recommencer() {
+			this.reponses.clear();
+			this.querySelectorAll<HTMLLIElement>('.question').forEach((li) => {
+				li.classList.remove('juste', 'faux');
+				li.querySelector<HTMLElement>('.q-explication')!.hidden = true;
+				li.querySelectorAll<HTMLButtonElement>('.choix').forEach((b) => {
+					b.disabled = false;
+					b.classList.remove('est-bonne', 'est-fausse');
+					b.removeAttribute('aria-pressed');
+				});
+			});
+			this.querySelector<HTMLElement>('[data-bilan]')!.hidden = true;
+			this.afficherPrecedent();
+			this.querySelector('.question')?.scrollIntoView({ block: 'start' });
+		}
+	}
+
+	if (!customElements.get('m-quiz')) customElements.define('m-quiz', MQuiz);
+</script>
+
+<style>
+	.quiz {
+		display: block;
+		max-width: 36rem;
+	}
+
+	.questions {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		counter-reset: q;
+	}
+
+	.question {
+		counter-increment: q;
+		padding: 1.25rem 0 1.4rem;
+		border-top: 1px solid var(--rule);
+	}
+
+	.q-intitule {
+		margin: 0 0 0.8rem;
+		font-size: 1.2rem;
+		font-weight: 500;
+	}
+
+	.q-intitule::before {
+		content: counter(q) '. ';
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	.q-choix {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.choix {
+		appearance: none;
+		font: inherit;
+		font-size: 1.1rem;
+		text-align: left;
+		color: var(--ink);
+		background: transparent;
+		border: 1px solid var(--rule);
+		border-radius: 3px;
+		padding: 0.5rem 0.85rem;
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		cursor: pointer;
+		line-height: 1.4;
+		transition:
+			background 0.15s,
+			border-color 0.15s;
+	}
+
+	.choix:hover:not(:disabled) {
+		background: var(--paper-2);
+		border-color: var(--rule-2);
+	}
+
+	.choix:disabled {
+		cursor: default;
+		color: var(--ink-2);
+	}
+
+	.choix-lettre {
+		font-variant-caps: all-small-caps;
+		color: var(--ink-3);
+		font-size: 1.05rem;
+		min-width: 0.8rem;
+	}
+
+	.choix.est-bonne {
+		border-color: var(--vert);
+		background: var(--vert-soft);
+		color: var(--ink);
+	}
+
+	.choix.est-bonne .choix-lettre {
+		color: var(--vert);
+	}
+
+	.choix.est-fausse {
+		border-color: var(--rouge);
+		background: var(--rouge-soft);
+		color: var(--ink);
+	}
+
+	.choix.est-fausse .choix-lettre {
+		color: var(--rouge);
+	}
+
+	.q-explication {
+		margin: 0.85rem 0 0;
+		font-size: 1.08rem;
+		color: var(--ink-2);
+		padding-left: 0.9rem;
+		border-left: 1px solid var(--rule-2);
+	}
+
+	.verdict {
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.06em;
+		font-size: 1.1rem;
+	}
+
+	.juste .verdict {
+		color: var(--vert);
+	}
+
+	.faux .verdict {
+		color: var(--rouge);
+	}
+
+	.quiz-bilan {
+		border-top: 1px solid var(--rule-2);
+		border-bottom: 1px solid var(--rule-2);
+		padding: 1.25rem 0;
+		margin-top: 0.5rem;
+	}
+
+	.bilan-score {
+		font-family: var(--font-display);
+		font-size: 2.6rem;
+		line-height: 1;
+		margin: 0 0 0.3rem;
+		color: var(--gold);
+		font-variant-numeric: lining-nums;
+	}
+
+	.bilan-mot {
+		margin: 0 0 1rem;
+	}
+
+	.quiz-precedent {
+		font-size: 1rem;
+		font-style: italic;
+		color: var(--ink-3);
+		margin: 0.75rem 0 0;
+	}
+</style>

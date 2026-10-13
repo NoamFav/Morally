@@ -1,0 +1,16 @@
+---
+import { getEntry } from 'astro:content';
+import { typo } from '../../lib/typo.mjs';
+
+interface Props {
+	/** id of the term in src/content/lexique.yaml */
+	t: string;
+}
+
+const { t } = Astro.props;
+const entree = await getEntry('lexique', t);
+if (!entree) throw new Error(`<Def t="${t}"> : terme absent du lexique.`);
+const id = `def-${t}-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<label for={id} class="def-mot sn-ref"><slot /></label><input type="checkbox" id={id} class="sn-toggle" /><span class="sidenote sn-def"><a href={`/lexique#${t}`} class="sn-terme">{entree.data.terme}</a> — {typo(entree.data.definition)}</span>

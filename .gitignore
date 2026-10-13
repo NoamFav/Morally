@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# source PDFs (SchoolMouv course sheets): local reference only, never committed or deployed
+sources/

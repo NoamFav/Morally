@@ -1,0 +1,290 @@
+---
+import { getCollection, getEntries, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { EPOQUES, notionsTriees, typoProfond } from '../../lib/programme';
+import '../../styles/lecon.css';
+
+export async function getStaticPaths() {
+	const auteurs = await getCollection('auteurs');
+	return auteurs.map((auteur) => ({ params: { id: auteur.id }, props: { auteur, tous: auteurs } }));
+}
+
+interface Props {
+	auteur: CollectionEntry<'auteurs'>;
+	tous: CollectionEntry<'auteurs'>[];
+}
+
+const { auteur, tous } = Astro.props;
+const data = typoProfond(auteur.data);
+const { Content } = await render(auteur);
+const courants = await getEntries(auteur.data.courants);
+const notions = (await notionsTriees()).filter((n) => n.data.auteurs.some((r) => r.id === auteur.id));
+const voisins = tous
+	.filter(
+		(a) => a.id !== auteur.id && a.data.courants.some((c) => auteur.data.courants.some((d) => d.id === c.id)),
+	)
+	.slice(0, 6);
+---
+
+<Base title={data.nom} description={data.resume}>
+	<article class="fiche-auteur wrap-narrow">
+		<header>
+			<p class="sc sur"><a href={`/auteurs#${data.epoque}`}>{EPOQUES[data.epoque]}</a></p>
+			<h1>{data.nom}</h1>
+			<p class="dates">{data.dates}</p>
+			<span class="fleuron" aria-hidden="true">❦</span>
+		</header>
+
+		{
+			data.citation && (
+				<figure class="citation grande">
+					<blockquote>
+						<p>{data.citation.texte}</p>
+					</blockquote>
+					<figcaption>
+						<cite>{data.citation.source}</cite>
+					</figcaption>
+				</figure>
+			)
+		}
+
+		<p class="resume">{data.resume}</p>
+
+		<section>
+			<h2 class="sc">Idées clés</h2>
+			<ol class="idees">
+				{data.idees.map((i) => <li>{i}</li>)}
+			</ol>
+		</section>
+
+		<section class="prose sans-numeros corps">
+			<h2 class="sc">Dans le programme</h2>
+			<Content />
+		</section>
+
+		<div class="colonnes">
+			<section>
+				<h2 class="sc">Œuvres principales</h2>
+				<ul class="oeuvres">
+					{
+						data.oeuvres.map((o) => (
+							<li>
+								<cite>{o.titre}</cite>
+								<span class="annee">{o.annee}</span>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+
+			<section>
+				{
+					notions.length > 0 && (
+						<>
+							<h2 class="sc">Leçons</h2>
+							<ul class="liens">
+								{notions.map((n) => (
+									<li>
+										<a href={`/notions/${n.id}`}>{n.data.titre}</a>
+									</li>
+								))}
+							</ul>
+						</>
+					)
+				}
+				{
+					courants.length > 0 && (
+						<>
+							<h2 class="sc">Courants</h2>
+							<ul class="liens">
+								{courants.map((c) => (
+									<li>
+										<a href={`/courants/${c.id}`}>{c.data.nom}</a>
+									</li>
+								))}
+							</ul>
+						</>
+					)
+				}
+			</section>
+		</div>
+
+		{
+			voisins.length > 0 && (
+				<section class="voisins">
+					<h2 class="sc">Du même courant</h2>
+					<p>
+						{voisins.map((v, i) => (
+							<>
+								{i > 0 && ' · '}
+								<a href={`/auteurs/${v.id}`}>{v.data.nom}</a>
+							</>
+						))}
+					</p>
+				</section>
+			)
+		}
+	</article>
+</Base>
+
+<style>
+	.fiche-auteur {
+		padding-top: 4.5rem;
+	}
+
+	header {
+		text-align: center;
+	}
+
+	.sur {
+		margin: 0 0 0.6rem;
+		letter-spacing: 0.16em;
+	}
+
+	.sur a {
+		color: var(--gold);
+		text-decoration: none;
+	}
+
+	h1 {
+		font-size: clamp(2.8rem, 7vw, 4.2rem);
+		margin: 0;
+		line-height: 1.02;
+	}
+
+	.dates {
+		color: var(--ink-3);
+		margin: 0.5rem 0 0;
+		font-variant-numeric: lining-nums;
+	}
+
+	.citation.grande {
+		margin: 0 auto 2.5rem;
+		max-width: 36rem;
+		text-align: center;
+	}
+
+	.citation.grande blockquote {
+		border: 0;
+		padding: 0;
+		font-size: 1.55rem;
+		line-height: 1.4;
+		font-family: var(--font-display);
+		font-style: italic;
+	}
+
+	.citation.grande blockquote p::before {
+		content: '« ';
+		color: var(--gold);
+	}
+
+	.citation.grande blockquote p::after {
+		content: ' »';
+		color: var(--gold);
+	}
+
+	.citation.grande figcaption {
+		margin: 0.6rem 0 0;
+		font-variant-caps: normal;
+		letter-spacing: 0;
+		color: var(--ink-3);
+		font-size: 1rem;
+	}
+
+	.resume {
+		font-size: 1.3rem;
+		line-height: 1.55;
+		margin: 0 0 2.5rem;
+	}
+
+	h2.sc {
+		font-family: var(--font-text);
+		font-size: 1.05rem;
+		color: var(--gold);
+		letter-spacing: 0.14em;
+		margin: 0 0 0.75rem;
+		font-weight: 500;
+	}
+
+	.prose h2.sc {
+		display: block;
+		font-size: 1.05rem;
+		margin: 0 0 0.75rem;
+	}
+
+	section {
+		margin-bottom: 2.5rem;
+	}
+
+	.idees {
+		margin: 0;
+		padding-left: 1.5rem;
+		font-size: 1.18rem;
+	}
+
+	.idees li {
+		margin-bottom: 0.45rem;
+		padding-left: 0.3rem;
+	}
+
+	.idees li::marker {
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	.corps {
+		font-size: 1.18rem;
+	}
+
+	.colonnes {
+		display: grid;
+		grid-template-columns: 3fr 2fr;
+		gap: 2rem;
+		border-top: 1px solid var(--rule);
+		padding-top: 1.75rem;
+	}
+
+	.oeuvres,
+	.liens {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1.75rem;
+	}
+
+	.oeuvres li {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.35rem 0;
+		border-bottom: 1px dotted var(--rule-2);
+		font-size: 1.1rem;
+	}
+
+	.annee {
+		color: var(--ink-3);
+		white-space: nowrap;
+		font-variant-numeric: lining-nums;
+		font-size: 0.98rem;
+	}
+
+	.liens li {
+		padding: 0.15rem 0;
+		font-size: 1.12rem;
+	}
+
+	.voisins {
+		border-top: 1px solid var(--rule);
+		padding-top: 1.5rem;
+	}
+
+	@media (max-width: 40rem) {
+		.colonnes {
+			grid-template-columns: 1fr;
+			gap: 0;
+		}
+		.fiche-auteur {
+			padding-top: 3rem;
+		}
+	}
+</style>

@@ -1,0 +1,56 @@
+---
+/** Centered page heading shared by the index pages (lexique, auteurs…). */
+interface Props {
+	sur: string;
+	titre: string;
+	intro?: string;
+}
+const { sur, titre, intro } = Astro.props;
+---
+
+<header class="en-tete">
+	<p class="sc sur">{sur}</p>
+	<h1>{titre}</h1>
+	<span class="fleuron" aria-hidden="true">❦</span>
+	{intro && <p class="intro">{intro}</p>}
+	<slot />
+</header>
+
+<style>
+	.en-tete {
+		text-align: center;
+		padding: 4.5rem 1.5rem 2.5rem;
+		max-width: 44rem;
+		margin: 0 auto;
+	}
+
+	.sur {
+		color: var(--gold);
+		letter-spacing: 0.16em;
+		margin: 0 0 0.75rem;
+		font-size: 1.05rem;
+	}
+
+	h1 {
+		font-size: clamp(2.8rem, 7vw, 4.2rem);
+		margin: 0;
+		line-height: 1;
+	}
+
+	.fleuron {
+		margin: 1.1rem 0 1.2rem;
+	}
+
+	.intro {
+		font-style: italic;
+		color: var(--ink-2);
+		font-size: 1.25rem;
+		margin: 0;
+	}
+
+	@media (max-width: 40rem) {
+		.en-tete {
+			padding: 3rem 1rem 2rem;
+		}
+	}
+</style>

@@ -1,0 +1,318 @@
+---
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import { notionsTriees, idCarte, romain } from '../lib/programme';
+
+const notions = (await notionsTriees()).map((n) => ({
+	id: n.id,
+	titre: n.data.titre,
+	numero: n.data.numero,
+	cartes: n.data.cartes.map((c) => idCarte(n.id, c.recto)),
+	questions: n.data.quiz.length,
+}));
+---
+
+<Base title="Carnet" description="Vos notes et votre progression, enregistrées dans ce navigateur.">
+	<EnTete
+		sur="Personnel"
+		titre="Carnet"
+		intro="Vos notes et votre progression. Tout est enregistré dans ce navigateur, nulle part ailleurs."
+	/>
+
+	<div class="wrap-narrow">
+		<section>
+			<h2 class="sc">Progression</h2>
+			<table class="progression">
+				<thead>
+					<tr>
+						<th scope="col">Leçon</th>
+						<th scope="col">Lecture</th>
+						<th scope="col">Questionnaire</th>
+						<th scope="col">Cartes maîtrisées</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						notions.map((n) => (
+							<tr data-ligne={n.id}>
+								<th scope="row">
+									<span class="cellule">
+										<span class="num">{romain(n.numero)}</span>
+										<a href={`/notions/${n.id}`}>{n.titre}</a>
+									</span>
+								</th>
+								<td data-lu>—</td>
+								<td data-quiz>—</td>
+								<td>
+									<span class="jauge" aria-hidden="true">
+										<span data-jauge />
+									</span>
+									<span data-cartes>0 / {n.cartes.length}</span>
+								</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</section>
+
+		<section>
+			<h2 class="sc">Mes notes</h2>
+			<div data-notes></div>
+			<p class="vide" data-vide>
+				Vous n’avez encore rien noté. Chaque leçon se termine par un espace « Mes notes » : ce que vous y écrivez
+				apparaîtra ici.
+			</p>
+		</section>
+
+		<section class="sauvegarde no-print">
+			<h2 class="sc">Sauvegarde</h2>
+			<p>
+				Vos données restent dans ce navigateur. Pour les transférer sur un autre appareil, exportez-les puis importez
+				le fichier là-bas.
+			</p>
+			<div class="actions">
+				<button type="button" class="btn btn-plein" data-exporter>Exporter mes données</button>
+				<label class="btn">
+					Importer un fichier
+					<input type="file" accept="application/json,.json" data-importer hidden />
+				</label>
+				<button type="button" class="btn btn-lien" data-effacer>Tout effacer</button>
+			</div>
+			<p class="message" data-message aria-live="polite"></p>
+		</section>
+	</div>
+
+	<script type="application/json" id="donnees-carnet" set:html={JSON.stringify(notions)} />
+</Base>
+
+<script>
+	import { charger, estMaitrisee, exporter, importer, toutEffacer } from '../scripts/store';
+
+	interface N {
+		id: string;
+		titre: string;
+		cartes: string[];
+		questions: number;
+	}
+	const notions: N[] = JSON.parse(document.getElementById('donnees-carnet')!.textContent!);
+	const message = document.querySelector<HTMLElement>('[data-message]')!;
+	const dateFr = (iso: string) =>
+		new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+	function afficher() {
+		const d = charger();
+
+		for (const n of notions) {
+			const ligne = document.querySelector<HTMLElement>(`[data-ligne="${n.id}"]`)!;
+			const e = d.notions[n.id];
+			ligne.querySelector('[data-lu]')!.textContent = e?.lue ? 'lue' : e?.visite ? 'entamée' : '—';
+			ligne.querySelector('[data-quiz]')!.textContent = e?.quiz ? `${e.quiz.score} / ${e.quiz.total}` : '—';
+			const m = n.cartes.filter((c) => estMaitrisee(d.cartes[c])).length;
+			ligne.querySelector('[data-cartes]')!.textContent = `${m} / ${n.cartes.length}`;
+			ligne.querySelector<HTMLElement>('[data-jauge]')!.style.width = `${(m / n.cartes.length) * 100}%`;
+			ligne.classList.toggle('est-lue', !!e?.lue);
+		}
+
+		const zone = document.querySelector<HTMLElement>('[data-notes]')!;
+		zone.replaceChildren();
+		const avecNotes = notions.filter((n) => d.notes[n.id]?.texte.trim());
+		document.querySelector<HTMLElement>('[data-vide]')!.hidden = avecNotes.length > 0;
+		for (const n of avecNotes) {
+			const note = d.notes[n.id];
+			const art = document.createElement('article');
+			art.className = 'note';
+			const h = document.createElement('h3');
+			const a = document.createElement('a');
+			a.href = `/notions/${n.id}#notes`;
+			a.textContent = n.titre;
+			h.append(a);
+			const date = document.createElement('p');
+			date.className = 'note-date';
+			date.textContent = `Modifiée le ${dateFr(note.maj)}`;
+			const texte = document.createElement('div');
+			texte.className = 'note-texte';
+			texte.textContent = note.texte;
+			art.append(h, date, texte);
+			zone.append(art);
+		}
+	}
+
+	document.querySelector('[data-exporter]')!.addEventListener('click', () => {
+		const blob = new Blob([exporter()], { type: 'application/json' });
+		const a = document.createElement('a');
+		a.href = URL.createObjectURL(blob);
+		a.download = `morally-${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(a.href);
+		message.textContent = 'Fichier exporté.';
+	});
+
+	document.querySelector<HTMLInputElement>('[data-importer]')!.addEventListener('change', async (e) => {
+		const f = (e.target as HTMLInputElement).files?.[0];
+		if (!f) return;
+		if (!confirm('Importer ce fichier remplacera vos notes et votre progression actuelles. Continuer ?')) return;
+		message.textContent = importer(await f.text())
+			? 'Données importées.'
+			: 'Ce fichier n’est pas une sauvegarde Morally valide.';
+		afficher();
+	});
+
+	document.querySelector('[data-effacer]')!.addEventListener('click', () => {
+		if (!confirm('Effacer définitivement vos notes et votre progression dans ce navigateur ?')) return;
+		toutEffacer();
+		message.textContent = 'Données effacées.';
+		afficher();
+	});
+
+	afficher();
+</script>
+
+<style>
+	section {
+		margin-bottom: 3rem;
+	}
+
+	h2 {
+		font-family: var(--font-text);
+		font-weight: 500;
+		font-size: 1.1rem;
+		letter-spacing: 0.16em;
+		color: var(--gold);
+		margin: 0 0 1rem;
+	}
+
+	.progression {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 1.05rem;
+		font-variant-numeric: lining-nums;
+	}
+
+	.progression thead th {
+		text-align: left;
+		font-weight: 500;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.06em;
+		color: var(--ink-3);
+		border-bottom: 1px solid var(--rule-2);
+		padding: 0.3rem 0.5rem 0.3rem 0;
+	}
+
+	.progression tbody th {
+		text-align: left;
+		font-weight: 400;
+	}
+
+	.progression td,
+	.progression tbody th {
+		border-bottom: 1px solid var(--rule);
+		padding: 0.5rem 0.5rem 0.5rem 0;
+		color: var(--ink-2);
+	}
+
+	.progression a {
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	.progression a:hover {
+		color: var(--oxblood);
+	}
+
+	.cellule {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+
+	.num {
+		flex: none;
+		min-width: 2.2rem;
+		color: var(--gold);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	.est-lue [data-lu] {
+		color: var(--vert);
+	}
+
+	.jauge {
+		display: inline-block;
+		width: 3.5rem;
+		height: 3px;
+		background: var(--rule);
+		vertical-align: middle;
+		margin-right: 0.5rem;
+	}
+
+	.jauge span {
+		display: block;
+		height: 100%;
+		width: 0;
+		background: var(--gold);
+	}
+
+	.vide {
+		font-style: italic;
+		color: var(--ink-3);
+	}
+
+	:global(.note) {
+		border-top: 1px solid var(--rule);
+		padding: 1rem 0 1.25rem;
+	}
+
+	:global(.note h3) {
+		font-size: 1.6rem;
+		margin: 0;
+	}
+
+	:global(.note h3 a) {
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	:global(.note-date) {
+		margin: 0.1rem 0 0.6rem;
+		font-size: 0.95rem;
+		color: var(--ink-3);
+		font-style: italic;
+	}
+
+	:global(.note-texte) {
+		white-space: pre-wrap;
+		font-size: 1.12rem;
+		border-left: 2px solid var(--oxblood);
+		padding-left: 1rem;
+	}
+
+	.sauvegarde p {
+		color: var(--ink-2);
+		font-size: 1.08rem;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+
+	.message {
+		font-style: italic;
+		min-height: 1.5em;
+	}
+
+	@media (max-width: 40rem) {
+		.progression thead th:nth-child(2),
+		.progression td:nth-child(2) {
+			display: none;
+		}
+		.jauge {
+			display: none;
+		}
+	}
+</style>

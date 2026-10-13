@@ -1,0 +1,164 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import EnTete from '../../components/EnTete.astro';
+import { EPOQUES, notionsTriees, typoProfond } from '../../lib/programme';
+
+const auteurs = (await getCollection('auteurs')).map((a) => ({ ...a, data: typoProfond(a.data) }));
+const notions = await notionsTriees();
+
+const annee = (dates: string) => {
+	const m = dates.match(/(\d{2,4})/);
+	if (!m) return 0;
+	const n = Number(m[1]);
+	// "v. 4 av. J.-C. – 65" is BC at the start only; "544 – 480 av. J.-C." is BC throughout
+	const avant = /av\. J\.-C\./.test(dates.split('–')[0]) || /av\. J\.-C\.\s*$/.test(dates);
+	return avant ? -n : n;
+};
+
+const ordreEpoques = Object.keys(EPOQUES);
+const groupes = ordreEpoques
+	.map((e) => ({
+		epoque: e,
+		titre: EPOQUES[e],
+		auteurs: auteurs.filter((a) => a.data.epoque === e).sort((a, b) => annee(a.data.dates) - annee(b.data.dates)),
+	}))
+	.filter((g) => g.auteurs.length);
+
+const notionsDe = (id: string) => notions.filter((n) => n.data.auteurs.some((r) => r.id === id));
+---
+
+<Base title="Auteurs" description="Les philosophes du programme : thèses, œuvres et citations.">
+	<EnTete
+		sur="Annexe"
+		titre="Auteurs"
+		intro={`${auteurs.length} philosophes et penseurs, de l’Antiquité au XXe siècle, classés par époque.`}
+	/>
+
+	<div class="wrap-narrow">
+		<nav class="epoques no-print" aria-label="Époques">
+			{groupes.map((g) => <a href={`#${g.epoque}`}>{g.titre}</a>)}
+		</nav>
+
+		{
+			groupes.map((g) => (
+				<section class="epoque" id={g.epoque}>
+					<h2 class="sc">{g.titre}</h2>
+					<ul>
+						{g.auteurs.map((a) => {
+							const ns = notionsDe(a.id);
+							return (
+								<li>
+									<a href={`/auteurs/${a.id}`} class="auteur">
+										<span class="ligne">
+											<span class="nom">{a.data.nom}</span>
+											<span class="dates">{a.data.dates}</span>
+										</span>
+										<span class="resume">{a.data.resume}</span>
+										{ns.length > 0 && (
+											<span class="notions">{ns.map((n) => n.data.titre).join(' · ')}</span>
+										)}
+									</a>
+								</li>
+							);
+						})}
+					</ul>
+				</section>
+			))
+		}
+	</div>
+</Base>
+
+<style>
+	.epoques {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.3rem 1.2rem;
+		border-top: 1px solid var(--rule);
+		border-bottom: 1px solid var(--rule);
+		padding: 0.7rem 0;
+		margin-bottom: 2.5rem;
+	}
+
+	.epoques a {
+		color: var(--ink-2);
+		text-decoration: none;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.07em;
+		font-size: 1.05rem;
+	}
+
+	.epoques a:hover {
+		color: var(--oxblood);
+	}
+
+	.epoque {
+		margin-bottom: 3rem;
+		scroll-margin-top: 5rem;
+	}
+
+	h2 {
+		font-family: var(--font-text);
+		font-size: 1.15rem;
+		letter-spacing: 0.18em;
+		color: var(--gold);
+		text-align: center;
+		margin: 0 0 1rem;
+	}
+
+	ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		border-top: 1px solid var(--rule);
+	}
+
+	.auteur {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.9rem 0.4rem;
+		border-bottom: 1px solid var(--rule);
+		text-decoration: none;
+		color: var(--ink);
+		transition: background 0.15s;
+	}
+
+	.auteur:hover {
+		background: var(--paper-2);
+	}
+
+	.ligne {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.nom {
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 500;
+		line-height: 1.15;
+	}
+
+	.dates {
+		color: var(--ink-3);
+		font-size: 1rem;
+		font-variant-numeric: lining-nums;
+	}
+
+	.resume {
+		color: var(--ink-2);
+		font-size: 1.08rem;
+		line-height: 1.45;
+	}
+
+	.notions {
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.05em;
+		color: var(--oxblood);
+		font-size: 1rem;
+	}
+</style>

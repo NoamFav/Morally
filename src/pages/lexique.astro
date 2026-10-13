@@ -1,0 +1,232 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import { notionsTriees, termesCites } from '../lib/programme';
+import { typo } from '../lib/typo.mjs';
+
+const termes = (await getCollection('lexique')).sort((a, b) =>
+	a.data.terme.localeCompare(b.data.terme, 'fr', { sensitivity: 'base' }),
+);
+const notions = await notionsTriees();
+const index = new Map(termes.map((t) => [t.id, t.data.terme]));
+
+// Which lessons use each term (from <Def t="…"> in the lesson bodies)
+const usages = new Map<string, { id: string; titre: string }[]>();
+for (const n of notions) {
+	for (const t of termesCites(n.body)) {
+		if (!usages.has(t)) usages.set(t, []);
+		usages.get(t)!.push({ id: n.id, titre: n.data.titre });
+	}
+}
+
+const lettre = (s: string) =>
+	s.normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0).toUpperCase();
+const groupes = new Map<string, typeof termes>();
+for (const t of termes) {
+	const l = lettre(t.data.terme);
+	if (!groupes.has(l)) groupes.set(l, []);
+	groupes.get(l)!.push(t);
+}
+---
+
+<Base title="Lexique" description="Les définitions essentielles du programme de philosophie.">
+	<EnTete sur="Annexe" titre="Lexique" intro={`${termes.length} notions et concepts à maîtriser, définis simplement.`} />
+
+	<div class="wrap-narrow">
+		<div class="outils no-print">
+			<label for="recherche" class="sr-only">Chercher un terme</label>
+			<input id="recherche" type="search" placeholder="Chercher un terme…" autocomplete="off" />
+			<nav class="lettres" aria-label="Lettres">
+				{[...groupes.keys()].map((l) => <a href={`#lettre-${l}`}>{l}</a>)}
+			</nav>
+		</div>
+
+		<p class="aucun" data-aucun hidden>Aucun terme ne correspond.</p>
+
+		{
+			[...groupes.entries()].map(([l, liste]) => (
+				<section class="groupe" id={`lettre-${l}`} data-groupe>
+					<h2 class="lettre">{l}</h2>
+					<dl>
+						{liste.map((t) => (
+							<div class="entree" id={t.id} data-texte={`${t.data.terme} ${t.data.definition}`.toLowerCase()}>
+								<dt>{t.data.terme}</dt>
+								<dd>
+									{t.data.etymologie && <p class="etym">{typo(t.data.etymologie)}</p>}
+									<p class="def">{typo(t.data.definition)}</p>
+									{(t.data.voir.length > 0 || usages.has(t.id)) && (
+										<p class="liens">
+											{t.data.voir.filter((v) => index.has(v)).length > 0 && (
+												<span>
+													<span class="sc">Voir</span>{' '}
+													{t.data.voir
+														.filter((v) => index.has(v))
+														.map((v, i) => (
+															<>
+																{i > 0 && ', '}
+																<a href={`#${v}`}>{index.get(v)}</a>
+															</>
+														))}
+												</span>
+											)}
+											{usages.has(t.id) && (
+												<span>
+													<span class="sc">Leçons</span>{' '}
+													{usages.get(t.id)!.map((n, i) => (
+														<>
+															{i > 0 && ', '}
+															<a href={`/notions/${n.id}`}>{n.titre}</a>
+														</>
+													))}
+												</span>
+											)}
+										</p>
+									)}
+								</dd>
+							</div>
+						))}
+					</dl>
+				</section>
+			))
+		}
+	</div>
+</Base>
+
+<script>
+	const champ = document.querySelector<HTMLInputElement>('#recherche')!;
+	const entrees = [...document.querySelectorAll<HTMLElement>('.entree')];
+	const groupes = [...document.querySelectorAll<HTMLElement>('[data-groupe]')];
+	const aucun = document.querySelector<HTMLElement>('[data-aucun]')!;
+	const sansAccents = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+	champ.addEventListener('input', () => {
+		const q = sansAccents(champ.value.trim().toLowerCase());
+		let n = 0;
+		for (const e of entrees) {
+			const ok = !q || sansAccents(e.dataset.texte!).includes(q);
+			e.hidden = !ok;
+			if (ok) n++;
+		}
+		for (const g of groupes) g.hidden = !g.querySelector('.entree:not([hidden])');
+		aucun.hidden = n > 0;
+	});
+</script>
+
+<style>
+	.outils {
+		position: sticky;
+		top: 3.6rem;
+		z-index: 5;
+		background: var(--paper);
+		padding: 0.75rem 0;
+		border-bottom: 1px solid var(--rule);
+		margin-bottom: 1rem;
+	}
+
+	input[type='search'] {
+		width: 100%;
+		font: inherit;
+		font-size: 1.15rem;
+		background: transparent;
+		color: var(--ink);
+		border: 0;
+		border-bottom: 1px solid var(--rule-2);
+		padding: 0.4rem 0.1rem;
+		margin-bottom: 0.6rem;
+	}
+
+	input[type='search']:focus {
+		outline: none;
+		border-bottom-color: var(--gold);
+	}
+
+	input::placeholder {
+		color: var(--ink-3);
+		font-style: italic;
+	}
+
+	.lettres {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.15rem 0.7rem;
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+	}
+
+	.lettres a {
+		text-decoration: none;
+		color: var(--ink-2);
+	}
+
+	.lettres a:hover {
+		color: var(--oxblood);
+	}
+
+	.lettre {
+		font-size: 2.6rem;
+		color: var(--gold);
+		margin: 2rem 0 0.25rem;
+		border-bottom: 1px solid var(--rule);
+		padding-bottom: 0.25rem;
+	}
+
+	dl {
+		margin: 0;
+	}
+
+	.entree {
+		padding: 1rem 0 0.8rem;
+		border-bottom: 1px solid var(--rule);
+		scroll-margin-top: 9rem;
+	}
+
+	.entree:target {
+		background: linear-gradient(to right, var(--gold-soft), transparent);
+	}
+
+	dt {
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 500;
+		line-height: 1.2;
+	}
+
+	dd {
+		margin: 0.2rem 0 0;
+	}
+
+	dd p {
+		margin: 0 0 0.35rem;
+	}
+
+	.etym {
+		font-style: italic;
+		color: var(--ink-3);
+		font-size: 1.05rem;
+	}
+
+	.def {
+		font-size: 1.15rem;
+	}
+
+	.liens {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		font-size: 1.02rem;
+		color: var(--ink-2);
+	}
+
+	.liens .sc {
+		color: var(--ink-3);
+		margin-right: 0.2rem;
+	}
+
+	.aucun {
+		font-style: italic;
+		color: var(--ink-3);
+		text-align: center;
+		padding: 2rem 0;
+	}
+</style>

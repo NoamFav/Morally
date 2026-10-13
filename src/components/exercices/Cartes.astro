@@ -1,0 +1,360 @@
+---
+export interface Carte {
+	id: string;
+	recto: string;
+	verso: string;
+	notion?: string;
+	titreNotion?: string;
+}
+
+interface Props {
+	cartes: Carte[];
+	/** "lecon": every card of one lesson. "revision": only due cards, notion shown on each. */
+	mode?: 'lecon' | 'revision';
+}
+
+const { cartes, mode = 'lecon' } = Astro.props;
+---
+
+<m-cartes data-mode={mode} class="cartes">
+	<script type="application/json" set:html={JSON.stringify(cartes)} />
+	<div class="cartes-tete">
+		<span class="cartes-compte sc" data-compte>—</span>
+		<span class="cartes-maitrise" data-maitrise></span>
+	</div>
+
+	<div class="progression" aria-hidden="true"><span data-barre></span></div>
+
+	<div class="fiche" data-fiche tabindex="0" aria-live="polite">
+		<p class="fiche-notion sc" data-notion hidden></p>
+		<p class="fiche-recto" data-recto>Chargement des cartes…</p>
+		<div class="fiche-verso" data-verso hidden></div>
+	</div>
+
+	<div class="cartes-actions" data-actions-retourner>
+		<button type="button" class="btn btn-plein" data-retourner>Retourner <kbd>espace</kbd></button>
+	</div>
+	<div class="cartes-actions" data-actions-noter hidden>
+		<button type="button" class="btn" data-non>À revoir <kbd>1</kbd></button>
+		<button type="button" class="btn btn-plein" data-oui>Je savais <kbd>2</kbd></button>
+	</div>
+
+	<div class="cartes-fin" data-fin hidden>
+		<p class="fin-titre">Paquet terminé</p>
+		<p class="fin-bilan" data-bilan></p>
+		<div class="cartes-actions">
+			<button type="button" class="btn" data-manquees>Revoir les cartes manquées</button>
+			<button type="button" class="btn btn-lien" data-recommencer>Tout recommencer</button>
+		</div>
+	</div>
+</m-cartes>
+
+<script>
+	import { charger, noterCarte, estDue, estMaitrisee } from '../../scripts/store';
+
+	interface Carte {
+		id: string;
+		recto: string;
+		verso: string;
+		notion?: string;
+		titreNotion?: string;
+	}
+
+	const melanger = <T,>(a: T[]) => {
+		const b = [...a];
+		for (let i = b.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[b[i], b[j]] = [b[j], b[i]];
+		}
+		return b;
+	};
+
+	class MCartes extends HTMLElement {
+		toutes: Carte[] = [];
+		pile: Carte[] = [];
+		index = 0;
+		retournee = false;
+		sues = 0;
+		manquees: Carte[] = [];
+
+		$<T extends Element = HTMLElement>(sel: string) {
+			return this.querySelector(sel) as T;
+		}
+
+		connectedCallback() {
+			this.toutes = JSON.parse(this.querySelector('script[type="application/json"]')!.textContent || '[]');
+			this.$('[data-retourner]').addEventListener('click', () => this.retourner());
+			this.$('[data-oui]').addEventListener('click', () => this.noter(true));
+			this.$('[data-non]').addEventListener('click', () => this.noter(false));
+			this.$('[data-recommencer]').addEventListener('click', () => this.demarrer(this.toutes));
+			this.$('[data-manquees]').addEventListener('click', () => this.demarrer(this.manquees));
+			this.$('[data-fiche]').addEventListener('click', () => !this.retournee && this.retourner());
+			this.addEventListener('keydown', (e) => this.clavier(e));
+			window.addEventListener('morally:filtre', ((e: CustomEvent<Carte[]>) => {
+				if (this.dataset.mode === 'revision') {
+					this.toutes = e.detail;
+					this.demarrer(this.cartesDues());
+				}
+			}) as EventListener);
+			this.demarrer(this.dataset.mode === 'revision' ? this.cartesDues() : this.ordreLecon());
+		}
+
+		cartesDues() {
+			const d = charger();
+			return melanger(this.toutes.filter((c) => estDue(d.cartes[c.id])));
+		}
+
+		/** In a lesson: cards due first, then the rest, each group in course order. */
+		ordreLecon() {
+			const d = charger();
+			const dues = this.toutes.filter((c) => estDue(d.cartes[c.id]));
+			const autres = this.toutes.filter((c) => !estDue(d.cartes[c.id]));
+			return [...dues, ...autres];
+		}
+
+		demarrer(cartes: Carte[]) {
+			this.pile = cartes;
+			this.index = 0;
+			this.sues = 0;
+			this.manquees = [];
+			this.$('[data-fin]').hidden = true;
+			this.$('[data-fiche]').hidden = false;
+			if (!cartes.length) {
+				this.vide();
+				return;
+			}
+			this.afficher();
+		}
+
+		vide() {
+			this.$('[data-fiche]').hidden = true;
+			this.$('[data-actions-retourner]').hidden = true;
+			this.$('[data-actions-noter]').hidden = true;
+			this.$('[data-fin]').hidden = false;
+			this.$('.fin-titre').textContent =
+				this.dataset.mode === 'revision' ? 'Rien à réviser pour l’instant' : 'Aucune carte';
+			this.$('[data-bilan]').textContent =
+				this.dataset.mode === 'revision'
+					? 'Toutes les cartes de cette sélection sont à jour. Revenez demain, ou relancez tout le paquet.'
+					: '';
+			this.$('[data-manquees]').hidden = true;
+			this.majTete();
+		}
+
+		afficher() {
+			const c = this.pile[this.index];
+			this.retournee = false;
+			const notion = this.$('[data-notion]');
+			notion.hidden = !c.titreNotion;
+			notion.textContent = c.titreNotion ?? '';
+			this.$('[data-recto]').textContent = c.recto;
+			const verso = this.$('[data-verso]');
+			verso.textContent = c.verso;
+			verso.hidden = true;
+			this.$('[data-actions-retourner]').hidden = false;
+			this.$('[data-actions-noter]').hidden = true;
+			this.majTete();
+		}
+
+		majTete() {
+			const total = this.pile.length;
+			this.$('[data-compte]').textContent = total
+				? `Carte ${Math.min(this.index + 1, total)} sur ${total}`
+				: '';
+			(this.$('[data-barre]') as HTMLElement).style.width = total
+				? `${(this.index / total) * 100}%`
+				: '0%';
+			const d = charger();
+			const m = this.toutes.filter((c) => estMaitrisee(d.cartes[c.id])).length;
+			this.$('[data-maitrise]').textContent = `${m} / ${this.toutes.length} maîtrisées`;
+		}
+
+		retourner() {
+			if (this.retournee || this.index >= this.pile.length) return;
+			this.retournee = true;
+			this.$('[data-verso]').hidden = false;
+			this.$('[data-actions-retourner]').hidden = true;
+			this.$('[data-actions-noter]').hidden = false;
+		}
+
+		noter(connue: boolean) {
+			if (!this.retournee) return;
+			const c = this.pile[this.index];
+			noterCarte(c.id, connue);
+			if (connue) this.sues++;
+			else this.manquees.push(c);
+			this.index++;
+			if (this.index >= this.pile.length) this.fin();
+			else this.afficher();
+		}
+
+		fin() {
+			this.majTete();
+			this.$('[data-fiche]').hidden = true;
+			this.$('[data-actions-retourner]').hidden = true;
+			this.$('[data-actions-noter]').hidden = true;
+			this.$('[data-fin]').hidden = false;
+			this.$('.fin-titre').textContent = 'Paquet terminé';
+			const n = this.manquees.length;
+			this.$('[data-bilan]').textContent =
+				n === 0
+					? `Sans faute : ${this.sues} carte${this.sues > 1 ? 's' : ''} sue${this.sues > 1 ? 's' : ''}.`
+					: `${this.sues} sue${this.sues > 1 ? 's' : ''}, ${n} à revoir. Les cartes manquées reviendront plus tôt dans vos révisions.`;
+			this.$('[data-manquees]').hidden = n === 0;
+		}
+
+		clavier(e: KeyboardEvent) {
+			if ((e.target as HTMLElement).closest('button') && e.key === ' ') return;
+			if (e.key === ' ' || e.key === 'Enter') {
+				if (!this.retournee) {
+					e.preventDefault();
+					this.retourner();
+				}
+			} else if (e.key === '1') this.noter(false);
+			else if (e.key === '2') this.noter(true);
+		}
+	}
+
+	if (!customElements.get('m-cartes')) customElements.define('m-cartes', MCartes);
+</script>
+
+<style>
+	.cartes {
+		display: block;
+		max-width: 34rem;
+	}
+
+	.cartes-tete {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		font-size: 1rem;
+		color: var(--ink-2);
+		margin-bottom: 0.4rem;
+	}
+
+	.cartes-maitrise {
+		font-style: italic;
+		color: var(--ink-3);
+	}
+
+	.progression {
+		height: 2px;
+		background: var(--rule);
+		margin-bottom: 1rem;
+	}
+
+	.progression span {
+		display: block;
+		height: 100%;
+		width: 0;
+		background: var(--gold);
+		transition: width 0.3s ease;
+	}
+
+	/* An index card: red header rule, faint ruled lines */
+	.fiche {
+		position: relative;
+		background-color: var(--paper-2);
+		background-image: repeating-linear-gradient(
+			to bottom,
+			transparent 0,
+			transparent calc(1.9rem - 1px),
+			color-mix(in srgb, var(--rule) 60%, transparent) calc(1.9rem - 1px),
+			color-mix(in srgb, var(--rule) 60%, transparent) 1.9rem
+		);
+		background-position: 0 3.1rem;
+		border: 1px solid var(--rule);
+		border-top: 2px solid var(--oxblood);
+		min-height: 13rem;
+		padding: 1.3rem 1.6rem 1.5rem;
+		cursor: pointer;
+		box-shadow: 0 1px 0 var(--rule), 0 12px 24px -18px rgb(0 0 0 / 0.35);
+	}
+
+	.fiche:focus-visible {
+		outline-offset: 4px;
+	}
+
+	.fiche-notion {
+		margin: 0 0 0.4rem;
+		color: var(--gold);
+		font-size: 1rem;
+	}
+
+	.fiche-recto {
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 500;
+		line-height: 1.25;
+		margin: 0;
+	}
+
+	.fiche-verso {
+		margin-top: 1.1rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--rule-2);
+		font-size: 1.15rem;
+		line-height: 1.55;
+		animation: apparaitre 0.25s ease;
+	}
+
+	@keyframes apparaitre {
+		from {
+			opacity: 0;
+			transform: translateY(-3px);
+		}
+	}
+
+	.cartes-actions {
+		display: flex;
+		gap: 0.75rem;
+		margin-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	kbd {
+		font-family: inherit;
+		font-size: 0.8em;
+		opacity: 0.6;
+		border: 1px solid currentColor;
+		border-radius: 2px;
+		padding: 0 0.3em;
+		margin-left: 0.2rem;
+		font-variant-caps: normal;
+		letter-spacing: 0;
+	}
+
+	@media (hover: none) {
+		kbd {
+			display: none;
+		}
+	}
+
+	.cartes-fin {
+		border: 1px solid var(--rule);
+		padding: 1.25rem 1.5rem;
+		background: var(--paper-2);
+	}
+
+	.fin-titre {
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		margin: 0 0 0.3rem;
+	}
+
+	.fin-bilan {
+		margin: 0;
+		color: var(--ink-2);
+		font-size: 1.1rem;
+	}
+
+	@media (max-width: 40rem) {
+		.fiche {
+			padding: 1.1rem 1.15rem 1.3rem;
+		}
+		.fiche-recto {
+			font-size: 1.4rem;
+		}
+	}
+</style>

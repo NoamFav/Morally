@@ -1,0 +1,11 @@
+---
+interface Props {
+	titre?: string;
+}
+const { titre = 'À retenir' } = Astro.props;
+---
+
+<aside class="retenir">
+	<p class="retenir-titre">{titre}</p>
+	<div class="retenir-corps"><slot /></div>
+</aside>

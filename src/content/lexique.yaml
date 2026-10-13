@@ -1,0 +1,600 @@
+# Lexique de Morally. Each id is referenced from lessons with <Def t="id">.
+# Keep definitions short (one or two sentences): they appear in the margin.
+
+- id: conscience
+  terme: Conscience
+  etymologie: Du latin cum scientia, « avec savoir ».
+  definition: Savoir qui accompagne ce que l’on vit. Elle peut être spontanée (je perçois), réfléchie (je sais que je perçois) ou morale (je juge mes actes).
+  voir: [reflexivite, inconscient, sujet]
+
+- id: reflexivite
+  terme: Réflexivité
+  definition: Capacité de la conscience à se prendre elle-même pour objet, à revenir sur ses propres pensées pour les examiner.
+  voir: [conscience]
+
+- id: cogito
+  terme: Cogito
+  etymologie: Du latin cogito, « je pense ».
+  definition: Chez Descartes, la certitude « je pense, donc je suis », première vérité qui résiste au doute méthodique.
+  voir: [doute-methodique, sujet]
+
+- id: sujet
+  terme: Sujet
+  etymologie: Du latin subjectum, « ce qui est placé dessous ».
+  definition: L’être conscient qui pense, agit et répond de ses actes, par opposition à l’objet, ce qui est pensé ou visé.
+  voir: [personne, conscience]
+
+- id: personne
+  terme: Personne
+  definition: Être doté de conscience et de raison, sujet de droits et de devoirs. Pour Kant, la personne a une dignité et non un prix ; on ne doit jamais la traiter seulement comme un moyen.
+  voir: [sujet, dignite]
+
+- id: reconnaissance
+  terme: Reconnaissance
+  definition: Chez Hegel, le fait pour une conscience d’être confirmée dans sa valeur par une autre conscience. La conscience de soi ne s’accomplit que dans cette relation.
+  voir: [conscience]
+
+- id: phenomenologie
+  terme: Phénoménologie
+  etymologie: Du grec phainomenon, « ce qui apparaît », et logos, « discours ».
+  definition: Méthode fondée par Husserl, qui consiste à décrire les choses telles qu’elles apparaissent à la conscience, en suspendant nos préjugés.
+  voir: [intentionnalite]
+
+- id: intentionnalite
+  terme: Intentionnalité
+  definition: Propriété de la conscience d’être toujours conscience de quelque chose, tournée vers un objet qu’elle vise.
+  voir: [phenomenologie, conscience]
+
+- id: petites-perceptions
+  terme: Petites perceptions
+  definition: Chez Leibniz, perceptions trop faibles pour être remarquées une à une, mais qui nous affectent réellement (le bruit de chaque vague dans le grondement de la mer).
+  voir: [inconscient]
+
+- id: inconscient
+  terme: Inconscient
+  definition: Adjectif, ce qui n’est pas conscient. Nom, chez Freud, la partie du psychisme formée de désirs et de souvenirs refoulés, active mais inaccessible directement à la conscience.
+  voir: [refoulement, conscience]
+
+- id: doute-methodique
+  terme: Doute méthodique
+  definition: Chez Descartes, décision de tenir provisoirement pour faux tout ce dont on peut douter, afin de trouver une vérité absolument certaine.
+  voir: [cogito, scepticisme]
+
+- id: dignite
+  terme: Dignité
+  definition: Valeur absolue de la personne humaine, qui ne peut être échangée contre rien d’autre et exige le respect.
+  voir: [personne]
+
+- id: refoulement
+  terme: Refoulement
+  definition: Chez Freud, mécanisme par lequel le psychisme repousse dans l’inconscient une représentation liée à un désir jugé inacceptable.
+  voir: [inconscient]
+
+- id: scepticisme
+  terme: Scepticisme
+  etymologie: Du grec skepsis, « examen ».
+  definition: Attitude qui consiste à suspendre son jugement, faute de pouvoir atteindre une certitude.
+  voir: [doute-methodique]
+
+- id: ca
+  terme: Ça
+  definition: "Chez Freud, l’instance la plus profonde du psychisme, réservoir des pulsions, qui ne vise que la satisfaction et ignore le temps, la logique et la morale."
+  voir: [surmoi, pulsion, inconscient]
+
+- id: surmoi
+  terme: Surmoi
+  definition: "Chez Freud, l’instance qui juge et censure le moi : elle résulte de l’intériorisation des interdits parentaux et sociaux."
+  voir: [ca, inconscient]
+
+- id: pulsion
+  terme: Pulsion
+  definition: "Poussée psychique d’origine corporelle qui tend vers une satisfaction. À la différence de l’instinct animal, son objet n’est pas fixé d’avance."
+  voir: [ca, desir]
+
+- id: acte-manque
+  terme: Acte manqué
+  definition: "Action qui échoue en apparence (oubli, lapsus, maladresse) mais réussit à exprimer un désir inconscient."
+  voir: [inconscient, refoulement]
+
+- id: mauvaise-foi
+  terme: Mauvaise foi
+  definition: "Chez Sartre, mensonge à soi-même par lequel on fuit sa liberté, en se faisant passer pour une chose déterminée (« je suis comme ça »)."
+  voir: [libre-arbitre]
+
+- id: refutabilite
+  terme: Réfutabilité
+  definition: "Chez Popper, critère de scientificité : une théorie est scientifique si une observation pourrait, en principe, la démentir."
+  voir: [hypothese, experience]
+
+- id: a-priori
+  terme: A priori / a posteriori
+  etymologie: "Du latin, « à partir de ce qui est avant » / « après »."
+  definition: "Est a priori ce qui est connu indépendamment de l’expérience (les vérités mathématiques) ; a posteriori, ce qui vient de l’expérience."
+  voir: [raison, experience]
+
+- id: duree
+  terme: Durée
+  definition: "Chez Bergson, le temps vécu par la conscience, continu et qualitatif, par opposition au temps mesuré, découpé en unités identiques."
+  voir: [temps]
+
+- id: finitude
+  terme: Finitude
+  definition: "Caractère de ce qui est limité, et d’abord de l’existence humaine, bornée par la mort et incapable de tout savoir."
+
+- id: libre-arbitre
+  terme: Libre arbitre
+  definition: "Pouvoir de la volonté de se déterminer elle-même, de choisir entre plusieurs possibles sans y être contrainte."
+  voir: [determinisme, liberte, responsabilite]
+
+- id: determinisme
+  terme: Déterminisme
+  definition: "Thèse selon laquelle tout événement, y compris nos décisions, est l’effet nécessaire de causes antérieures."
+  voir: [libre-arbitre, necessite]
+
+- id: necessite
+  terme: Nécessité
+  definition: "Caractère de ce qui ne peut pas ne pas être, ou être autrement. S’oppose à la contingence (ce qui aurait pu ne pas être) et parfois à la liberté."
+  voir: [determinisme, contingence]
+
+- id: compatibilisme
+  terme: Compatibilisme
+  definition: "Thèse selon laquelle liberté et déterminisme peuvent coexister : être libre, c’est agir selon sa volonté sans contrainte extérieure, même si cette volonté a des causes."
+  voir: [libre-arbitre, determinisme]
+
+- id: temps
+  terme: Temps
+  definition: "Milieu indéfini où se succèdent les événements. On distingue le temps mesuré (objectif) et le temps vécu (subjectif)."
+  voir: [duree]
+
+- id: desir
+  terme: Désir
+  definition: "Tendance consciente vers un objet que l’on se représente comme source de satisfaction. Souvent pensé comme manque (Platon), parfois comme puissance (Spinoza)."
+  voir: [besoin, bonheur]
+
+- id: hypothese
+  terme: Hypothèse
+  definition: "Proposition admise provisoirement pour expliquer des faits, et que l’on doit ensuite mettre à l’épreuve de l’expérience."
+  voir: [experience, refutabilite]
+
+- id: experience
+  terme: Expérience
+  definition: "Au sens courant, ce que l’on a vécu et appris par la pratique. Au sens scientifique, l’expérimentation : épreuve organisée pour tester une hypothèse."
+  voir: [hypothese, a-priori]
+
+- id: raison
+  terme: Raison
+  etymologie: "Du latin ratio, « calcul », traduisant le grec logos."
+  definition: "Faculté de penser selon des principes, de juger, de démontrer et de distinguer le vrai du faux et le bien du mal."
+  voir: [a-priori]
+
+- id: liberte
+  terme: Liberté
+  definition: "Absence de contrainte (liberté négative), ou pouvoir de se déterminer soi-même selon des règles qu’on se donne (autonomie)."
+  voir: [libre-arbitre, autonomie]
+
+- id: responsabilite
+  terme: Responsabilité
+  etymologie: "Du latin respondere, « répondre »."
+  definition: "Obligation de répondre de ses actes et de leurs conséquences, devant autrui, la loi ou sa conscience."
+  voir: [libre-arbitre]
+
+- id: contingence
+  terme: Contingence
+  definition: "Caractère de ce qui aurait pu ne pas être, ou être autrement. S’oppose à la nécessité."
+  voir: [necessite]
+
+- id: autonomie
+  terme: Autonomie
+  etymologie: "Du grec autos, « soi-même », et nomos, « loi »."
+  definition: "Fait de se donner à soi-même sa propre loi. Chez Kant, la volonté autonome obéit à la loi morale que la raison se donne."
+  voir: [heteronomie, liberte]
+
+- id: heteronomie
+  terme: Hétéronomie
+  definition: "Fait de recevoir sa loi d’autre chose que de sa propre raison : des désirs, d’autrui, de la société."
+  voir: [autonomie]
+
+- id: besoin
+  terme: Besoin
+  definition: "Manque lié à une nécessité vitale (manger, dormir). À la différence du désir, il a un objet fixé et cesse quand il est satisfait."
+  voir: [desir]
+
+- id: bonheur
+  terme: Bonheur
+  definition: "État de satisfaction complète et durable. Pour Aristote, fin ultime de toute action humaine ; pour Kant, « idéal de l’imagination »."
+  voir: [desir]
+
+- id: logos
+  terme: Logos
+  definition: "Mot grec signifiant à la fois « parole » et « raison ». Chez Aristote, ce qui distingue l’homme : il exprime le juste et l’injuste, pas seulement le plaisir et la douleur."
+  voir: [raison, signe]
+
+- id: signe
+  terme: Signe
+  definition: "Chose qui renvoie à autre chose qu’elle-même. Chez Saussure, le signe linguistique unit un signifiant (image acoustique) et un signifié (concept)."
+  voir: [arbitraire, symbole]
+
+- id: arbitraire
+  terme: Arbitraire du signe
+  definition: "Absence de lien naturel entre le signifiant et le signifié : rien dans le son « arbre » ne ressemble à un arbre."
+  voir: [signe, convention]
+
+- id: sens-denotation
+  terme: Sens et dénotation
+  definition: "Chez Frege, la dénotation est l’objet qu’une expression désigne ; le sens est la manière dont cet objet est donné. « Étoile du matin » et « étoile du soir » : même dénotation, sens différents."
+  voir: [signe]
+
+- id: ineffable
+  terme: Ineffable
+  definition: "Ce qui ne peut pas être exprimé par des mots. Pour Bergson, le vécu singulier ; pour Hegel, une pensée encore confuse."
+  voir: [signe]
+
+- id: performatif
+  terme: Performatif
+  definition: "Chez Austin, énoncé qui accomplit l’action qu’il énonce (« je le promets », « je vous déclare unis ») au lieu de décrire un état de fait."
+
+- id: genie
+  terme: Génie
+  definition: "Chez Kant, talent inné de produire ce dont on ne peut donner aucune règle déterminée ; ses œuvres sont originales et exemplaires."
+  voir: [esthetique]
+
+- id: mimesis
+  terme: Mimèsis
+  etymologie: "Du grec, « imitation »."
+  definition: "Imitation ou représentation. Platon la condamne comme copie de copie ; Aristote y voit une tendance naturelle et une source de connaissance."
+  voir: [catharsis]
+
+- id: catharsis
+  terme: Catharsis
+  etymologie: "Du grec, « purification »."
+  definition: "Chez Aristote, effet de la tragédie qui, en suscitant la terreur et la pitié, purifie le spectateur de ces passions."
+  voir: [mimesis]
+
+- id: jugement-de-gout
+  terme: Jugement de goût
+  definition: "Chez Kant, jugement par lequel on déclare une chose belle. Il est désintéressé, sans concept, et prétend pourtant à l’universalité."
+  voir: [esthetique, genie]
+
+- id: esthetique
+  terme: Esthétique
+  etymologie: "Du grec aisthêsis, « sensation »."
+  definition: "Partie de la philosophie qui réfléchit sur le beau, l’art et le jugement de goût."
+  voir: [jugement-de-gout]
+
+- id: loisir
+  terme: Loisir (skholè)
+  definition: "Chez les Grecs, temps libéré des nécessités du travail, consacré à la politique, à l’étude et à la contemplation. Le mot a donné « école »."
+  voir: [travail]
+
+- id: travail
+  terme: Travail
+  definition: "Activité par laquelle l’homme transforme la nature pour satisfaire ses besoins, et se transforme lui-même."
+  voir: [alienation, technique]
+
+- id: alienation
+  terme: Aliénation
+  etymologie: "Du latin alienus, « étranger »."
+  definition: "Fait de devenir étranger à soi-même, de perdre la maîtrise de ce qu’on est ou de ce qu’on produit. Chez Marx, condition du travailleur salarié dépossédé de son produit et de son activité."
+  voir: [travail]
+
+- id: technique
+  terme: Technique
+  etymologie: "Du grec technè, « savoir-faire »."
+  definition: "Ensemble des procédés réglés et des outils par lesquels l’homme transforme la nature en vue d’une fin."
+  voir: [homo-faber, travail]
+
+- id: homo-faber
+  terme: Homo faber
+  definition: "« L’homme qui fabrique ». Chez Bergson, l’intelligence est d’abord la faculté de fabriquer des outils, et des outils à faire des outils."
+  voir: [technique]
+
+- id: heuristique-de-la-peur
+  terme: Heuristique de la peur
+  definition: "Chez Jonas, principe qui consiste à donner plus de poids aux prévisions de catastrophe qu’aux promesses de progrès quand l’avenir de l’humanité est en jeu."
+  voir: [responsabilite, technique]
+
+- id: arraisonnement
+  terme: Arraisonnement
+  definition: "Chez Heidegger, manière dont la technique moderne somme la nature de livrer de l’énergie stockable, réduisant le monde à un fonds disponible."
+  voir: [technique]
+
+- id: religion
+  terme: Religion
+  etymologie: "Du latin religare, « relier », ou relegere, « recueillir »."
+  definition: "Ensemble de croyances et de pratiques relatives au sacré, qui unissent ceux qui les partagent en une communauté."
+  voir: [sacre, foi]
+
+- id: sacre
+  terme: Sacré
+  definition: "Ce qui est séparé, mis à part et entouré d’interdits, par opposition au profane, ce qui relève de l’usage ordinaire."
+  voir: [religion]
+
+- id: foi
+  terme: Foi
+  definition: "Adhésion confiante à ce qui ne peut être démontré, en particulier à l’existence de Dieu. Pour Pascal, elle est « Dieu sensible au cœur »."
+  voir: [religion, croyance]
+
+- id: croyance
+  terme: Croyance
+  definition: "Adhésion de l’esprit à une idée tenue pour vraie sans preuve suffisante. Elle se distingue du savoir, qui est justifié."
+  voir: [opinion, foi]
+
+- id: illusion
+  terme: Illusion
+  definition: "Erreur qui persiste même quand on la connaît. Chez Freud, croyance motivée par un désir, qui n’est pas forcément fausse."
+  voir: [croyance]
+
+- id: laicite
+  terme: Laïcité
+  definition: "Principe de séparation des Églises et de l’État, qui garantit la liberté de conscience et la neutralité des pouvoirs publics à l’égard des religions."
+  voir: [religion, etat]
+
+- id: preuve-ontologique
+  terme: Preuve ontologique
+  definition: "Argument qui conclut à l’existence de Dieu à partir de son concept : un être parfait qui n’existerait pas manquerait d’une perfection (Anselme, Descartes)."
+  voir: [foi]
+
+- id: theodicee
+  terme: Théodicée
+  etymologie: "Du grec theos, « dieu », et dikè, « justice »."
+  definition: "Justification de Dieu face au problème du mal. Chez Leibniz, Dieu a choisi le meilleur des mondes possibles."
+
+- id: opinion
+  terme: Opinion
+  etymologie: "En grec, doxa."
+  definition: "Jugement que l’on tient pour vrai sans pouvoir le justifier rigoureusement. Platon l’oppose à la science (épistémè)."
+  voir: [croyance, verite]
+
+- id: verite
+  terme: Vérité
+  definition: "Accord de la pensée avec son objet (vérité-correspondance) ou des pensées entre elles (vérité-cohérence). Elle se distingue de la réalité, qui est ce qui existe."
+  voir: [opinion]
+
+- id: convention
+  terme: Convention
+  definition: "Ce qui est établi par un accord entre les hommes, et non par la nature."
+  voir: [arbitraire]
+
+- id: symbole
+  terme: Symbole
+  definition: "Signe qui entretient un rapport de ressemblance ou d’analogie avec ce qu’il représente (la balance pour la justice), à la différence du signe arbitraire."
+  voir: [signe]
+
+- id: etat
+  terme: État
+  definition: "Institution qui exerce l’autorité politique souveraine sur une population et un territoire, et qui détient le monopole de la contrainte légitime (Weber)."
+  voir: [souverainete]
+
+- id: souverainete
+  terme: Souveraineté
+  definition: "Pouvoir suprême de commander, au-dessus duquel il n’y en a pas d’autre. Chez Rousseau, elle appartient au peuple et s’exprime par la volonté générale."
+  voir: [etat, volonte-generale]
+
+- id: volonte-generale
+  terme: Volonté générale
+  definition: "Chez Rousseau, volonté du peuple en tant que corps, qui vise l’intérêt commun. Elle se distingue de la somme des volontés particulières."
+  voir: [souverainete]
+
+- id: non-contradiction
+  terme: Principe de non-contradiction
+  definition: "Une même chose ne peut pas à la fois être et ne pas être, sous le même rapport. Pour Aristote, le plus certain de tous les principes."
+  voir: [raison, raison-suffisante]
+
+- id: raison-suffisante
+  terme: Principe de raison suffisante
+  definition: "Chez Leibniz : rien n’arrive sans qu’il y ait une raison pour laquelle cela est ainsi plutôt qu’autrement."
+  voir: [non-contradiction]
+
+- id: deduction
+  terme: Déduction
+  definition: "Raisonnement qui tire une conclusion nécessaire de prémisses posées (du général au particulier, ou d’axiomes aux théorèmes)."
+  voir: [induction]
+
+- id: induction
+  terme: Induction
+  definition: "Raisonnement qui généralise à partir de cas particuliers observés. Hume montre qu’il n’a pas de fondement rationnel strict."
+  voir: [deduction, refutabilite]
+
+- id: adequation
+  terme: Adéquation
+  definition: "Conformité de la pensée à la chose. Définition classique de la vérité : adaequatio rei et intellectus."
+  voir: [verite]
+
+- id: maieutique
+  terme: Maïeutique
+  etymologie: "Du grec maieutikè, « art de l’accouchement »."
+  definition: "Méthode de Socrate qui, par des questions, aide l’interlocuteur à découvrir lui-même la vérité ou à reconnaître son ignorance."
+  voir: [dialectique]
+
+- id: dialectique
+  terme: Dialectique
+  definition: "Chez Platon, art du dialogue qui s’élève de l’opinion vers la vérité. Chez Hegel, mouvement de la pensée et du réel qui progresse en surmontant ses contradictions."
+  voir: [maieutique]
+
+- id: loi-scientifique
+  terme: Loi scientifique
+  definition: "Énoncé d’un rapport constant entre des phénomènes, souvent mathématisable (la loi de la chute des corps)."
+  voir: [hypothese, theorie]
+
+- id: theorie
+  terme: Théorie
+  etymologie: "Du grec theôria, « contemplation »."
+  definition: "Ensemble organisé de lois et de concepts qui explique un domaine de phénomènes. S’oppose à la pratique, mais aussi, au sens courant, à ce qui est prouvé."
+  voir: [loi-scientifique, hypothese]
+
+- id: obstacle-epistemologique
+  terme: Obstacle épistémologique
+  definition: "Chez Bachelard, habitude de pensée (l’expérience première, l’image, la généralisation hâtive) qui fait obstacle au progrès de la connaissance scientifique."
+  voir: [opinion]
+
+- id: paradigme
+  terme: Paradigme
+  definition: "Chez Kuhn, ensemble de théories, de méthodes et d’exemples partagés par une communauté scientifique. Une révolution scientifique remplace un paradigme par un autre."
+  voir: [theorie]
+
+- id: scientisme
+  terme: Scientisme
+  definition: "Croyance selon laquelle la science peut répondre à toutes les questions, y compris morales et existentielles."
+
+- id: nature
+  terme: Nature
+  etymologie: "Du latin natura (de nasci, « naître »), qui traduit le grec phusis (« croissance »)."
+  definition: "Ensemble de ce qui existe sans intervention humaine, ou essence d’un être (« la nature humaine »). S’oppose à l’artifice et à la culture."
+  voir: [culture, etat-de-nature]
+
+- id: culture
+  terme: Culture
+  definition: "Ensemble de ce que l’homme ajoute à la nature et transmet : langues, techniques, savoirs, mœurs, institutions. Au singulier, aussi la formation de l’esprit."
+  voir: [nature]
+
+- id: etat-de-nature
+  terme: État de nature
+  definition: "Hypothèse d’une condition humaine antérieure à toute société organisée. Guerre de tous contre tous chez Hobbes, solitude paisible chez Rousseau."
+  voir: [contrat-social, nature]
+
+- id: perfectibilite
+  terme: Perfectibilité
+  definition: "Chez Rousseau, faculté propre à l’homme de se perfectionner, source de tous ses progrès et de tous ses malheurs."
+  voir: [nature]
+
+- id: mecanisme
+  terme: Mécanisme
+  definition: "Conception qui explique les phénomènes naturels, y compris le vivant, par la matière et le mouvement, sans recourir à des fins (Descartes)."
+  voir: [finalite]
+
+- id: finalite
+  terme: Finalité
+  definition: "Caractère de ce qui est orienté vers une fin. Le finalisme explique les êtres par leur but (l’œil est fait pour voir)."
+  voir: [mecanisme]
+
+- id: contrat-social
+  terme: Contrat social
+  definition: "Accord par lequel des individus libres instituent une société politique et une autorité commune. Il fonde la légitimité du pouvoir sur le consentement."
+  voir: [etat-de-nature, volonte-generale]
+
+- id: ataraxie
+  terme: Ataraxie
+  etymologie: "Du grec, « absence de trouble »."
+  definition: "Tranquillité de l’âme, libérée de la crainte et du désir excessif. Idéal de bonheur des épicuriens et des stoïciens."
+  voir: [bonheur]
+
+- id: souverain-bien
+  terme: Souverain bien
+  definition: "Bien suprême, recherché pour lui-même et en vue duquel on recherche tous les autres. Pour Aristote, c’est le bonheur."
+  voir: [bonheur]
+
+- id: hedonisme
+  terme: Hédonisme
+  etymologie: "Du grec hêdonê, « plaisir »."
+  definition: "Doctrine qui fait du plaisir le souverain bien et le principe de la conduite."
+  voir: [bonheur, ataraxie]
+
+- id: devoir
+  terme: Devoir
+  definition: "Obligation morale : ce que l’on doit faire, indépendamment de ses désirs. Le devoir s’adresse à une liberté, à la différence de la contrainte qui s’impose par la force."
+  voir: [imperatif-categorique, obligation]
+
+- id: obligation
+  terme: Obligation et contrainte
+  definition: "La contrainte force (je ne peux pas faire autrement) ; l’obligation commande à une volonté libre, qui pourrait désobéir. Seule l’obligation est morale."
+  voir: [devoir]
+
+- id: imperatif-categorique
+  terme: Impératif catégorique
+  definition: "Chez Kant, commandement moral inconditionnel : « agis uniquement d’après la maxime qui fait que tu peux vouloir en même temps qu’elle devienne une loi universelle »."
+  voir: [devoir, autonomie, maxime]
+
+- id: maxime
+  terme: Maxime
+  definition: "Chez Kant, règle subjective d’action que se donne un individu (« je mens quand cela m’arrange »). La morale exige de vérifier qu’elle peut devenir une loi universelle."
+  voir: [imperatif-categorique]
+
+- id: utilitarisme
+  terme: Utilitarisme
+  definition: "Doctrine morale selon laquelle une action est bonne si elle produit le plus grand bonheur pour le plus grand nombre (Bentham, Mill)."
+  voir: [bonheur, devoir]
+
+- id: liberte-d-indifference
+  terme: Liberté d’indifférence
+  definition: "Pouvoir de choisir lorsqu’aucune raison ne fait pencher d’un côté plutôt que de l’autre. Pour Descartes, « le plus bas degré de la liberté »."
+  voir: [libre-arbitre]
+
+- id: liberte-negative
+  terme: Liberté négative
+  definition: "Chez Berlin, la liberté comme absence d’interférence : l’espace dans lequel personne ne m’empêche d’agir."
+  voir: [liberte-positive]
+
+- id: liberte-positive
+  terme: Liberté positive
+  definition: "Chez Berlin, la liberté comme maîtrise de soi : être son propre maître, se gouverner selon ses propres raisons."
+  voir: [liberte-negative, autonomie]
+
+- id: temperance
+  terme: Tempérance
+  definition: "Vertu de modération qui règle les désirs et les plaisirs. Platon y voit la condition de la liberté intérieure."
+  voir: [desir]
+
+- id: legitimite
+  terme: Légitimité
+  definition: "Qualité de ce qui est fondé en droit ou en justice, et non sur la seule force. Un pouvoir légitime oblige ; un pouvoir illégitime ne fait que contraindre."
+  voir: [legalite, etat]
+
+- id: legalite
+  terme: Légalité
+  definition: "Conformité aux lois en vigueur (droit positif). Le légal n’est pas forcément légitime."
+  voir: [legitimite, droit-positif]
+
+- id: separation-des-pouvoirs
+  terme: Séparation des pouvoirs
+  definition: "Principe, formulé par Montesquieu, selon lequel les pouvoirs législatif, exécutif et judiciaire doivent être confiés à des organes distincts, pour que « le pouvoir arrête le pouvoir »."
+  voir: [etat]
+
+- id: totalitarisme
+  terme: Totalitarisme
+  definition: "Régime qui vise la domination totale de la société et des individus par une idéologie, un parti unique et la terreur (Arendt : nazisme, stalinisme)."
+  voir: [etat]
+
+- id: justice
+  terme: Justice
+  definition: "Vertu qui consiste à rendre à chacun ce qui lui est dû ; institution chargée d’appliquer le droit ; idéal au nom duquel on juge les lois."
+  voir: [equite, droit-positif, droit-naturel]
+
+- id: droit-positif
+  terme: Droit positif
+  definition: "Ensemble des règles juridiques effectivement en vigueur dans une société donnée, à un moment donné."
+  voir: [droit-naturel, legalite]
+
+- id: droit-naturel
+  terme: Droit naturel
+  definition: "Ensemble de droits et de principes de justice que l’on suppose valables pour tout être humain, antérieurs et supérieurs aux lois positives."
+  voir: [droit-positif]
+
+- id: equite
+  terme: Équité
+  definition: "Chez Aristote, correctif de la loi : elle adapte une règle générale à la singularité d’un cas. Au sens courant, justice qui tient compte des situations particulières."
+  voir: [justice]
+
+- id: voile-d-ignorance
+  terme: Voile d’ignorance
+  definition: "Chez Rawls, situation fictive dans laquelle on choisit les principes de justice sans savoir quelle place on occupera dans la société."
+  voir: [justice, contrat-social]
+
+- id: desobeissance-civile
+  terme: Désobéissance civile
+  definition: "Refus public et non violent d’obéir à une loi jugée injuste, en acceptant la sanction, pour obtenir sa modification (Thoreau, Gandhi, Martin Luther King)."
+  voir: [legitimite, justice]
+
+- id: liberte-civile
+  terme: Liberté civile
+  definition: "Chez Rousseau, liberté du citoyen, limitée par la volonté générale mais garantie par la loi, par opposition à la liberté naturelle, illimitée mais précaire."
+  voir: [contrat-social, liberte]
+
+- id: citoyen
+  terme: Citoyen
+  definition: "Membre d’une communauté politique, titulaire de droits et de devoirs, qui participe au pouvoir souverain. Chez Rousseau, à la fois souverain et sujet."
+  voir: [souverainete, liberte-civile]
+
+- id: servitude-volontaire
+  terme: Servitude volontaire
+  definition: "Chez La Boétie, le fait que les peuples consentent eux-mêmes à leur oppression : le tyran n’a de pouvoir que celui qu’on lui laisse."
+  voir: [liberte-civile]

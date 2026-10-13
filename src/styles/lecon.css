@@ -1,0 +1,325 @@
+/* ——— Lesson prose: shared by notions, méthode, auteurs, courants ——— */
+
+.prose {
+	counter-reset: sn partie;
+	font-size: 1.25rem;
+	line-height: 1.6;
+}
+
+.prose > * {
+	max-width: var(--measure);
+}
+
+.prose p {
+	margin: 0 0 1.05em;
+}
+
+/* Drop cap on the opening paragraph */
+.prose.lettrine > p:first-of-type::first-letter {
+	float: left;
+	font-family: var(--font-display);
+	font-weight: 500;
+	font-size: 4.6em;
+	line-height: 0.82;
+	padding: 0.06em 0.09em 0 0;
+	margin-top: 0.02em;
+	color: var(--gold);
+}
+
+.prose h2 {
+	counter-increment: partie;
+	counter-reset: souspartie;
+	font-size: 2.05rem;
+	margin: 3.25rem 0 1.1rem;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	column-gap: 0.65em;
+	align-items: baseline;
+}
+
+.prose h2::before {
+	content: counter(partie, upper-roman) '.';
+	color: var(--gold);
+	font-weight: 500;
+	min-width: 1.4em;
+}
+
+.prose.sans-numeros h2,
+.prose h2#conclusion {
+	display: block;
+	counter-increment: none;
+}
+
+.prose.sans-numeros h2::before {
+	content: none;
+}
+
+.prose h2#conclusion::before {
+	content: '❧';
+	display: block;
+	text-align: left;
+	font-size: 1.3rem;
+	margin-bottom: 0.4rem;
+}
+
+.prose h3 {
+	counter-increment: souspartie;
+	font-size: 1.5rem;
+	font-style: italic;
+	font-weight: 500;
+	margin: 2.2rem 0 0.75rem;
+}
+
+.prose h3::before {
+	content: counter(souspartie, lower-alpha) '. ';
+	font-style: normal;
+	color: var(--gold);
+}
+
+.prose.sans-numeros h3::before {
+	content: none;
+}
+
+.prose h2 + h3 {
+	margin-top: 1.25rem;
+}
+
+.prose ul,
+.prose ol {
+	padding-left: 1.3em;
+	margin: 0 0 1.2em;
+}
+
+.prose li {
+	margin-bottom: 0.4em;
+	padding-left: 0.2em;
+}
+
+.prose ul li::marker {
+	content: '—  ';
+	color: var(--gold);
+}
+
+.prose ol li::marker {
+	color: var(--gold);
+	font-variant-numeric: oldstyle-nums;
+}
+
+.prose strong {
+	font-weight: 600;
+}
+
+.prose em {
+	font-style: italic;
+}
+
+.prose blockquote {
+	margin: 1.6rem 0;
+	padding: 0 0 0 1.25rem;
+	border-left: 1px solid var(--gold);
+	font-style: italic;
+	color: var(--ink-2);
+}
+
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 1.05rem;
+	margin: 1.5rem 0 2rem;
+	font-variant-numeric: lining-nums;
+}
+
+.prose th {
+	text-align: left;
+	font-weight: 500;
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.06em;
+	color: var(--ink-2);
+	border-bottom: 1px solid var(--rule-2);
+	padding: 0.4rem 0.75rem 0.4rem 0;
+}
+
+.prose td {
+	border-bottom: 1px solid var(--rule);
+	padding: 0.55rem 0.75rem 0.55rem 0;
+	vertical-align: top;
+}
+
+/* ——— Citation ——— */
+
+.citation {
+	margin: 2rem 0 2.2rem;
+	padding: 0;
+}
+
+.citation blockquote {
+	margin: 0;
+	padding: 0 0 0 1.4rem;
+	border-left: 2px solid var(--oxblood);
+	font-style: italic;
+	font-size: 1.3rem;
+	line-height: 1.5;
+	color: var(--ink);
+}
+
+.citation blockquote p {
+	margin: 0;
+}
+
+.citation figcaption {
+	margin: 0.5rem 0 0 1.4rem;
+	font-size: 1rem;
+	color: var(--ink-2);
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.06em;
+	font-size: 1.1rem;
+}
+
+.citation figcaption cite {
+	font-variant-caps: normal;
+	letter-spacing: 0;
+	font-size: 1rem;
+}
+
+.citation figcaption a {
+	color: inherit;
+}
+
+/* ——— À retenir ——— */
+
+.retenir {
+	margin: 2rem 0;
+	padding: 1.1rem 1.4rem 0.4rem;
+	background: var(--paper-2);
+	border-top: 1px solid var(--gold);
+	border-bottom: 1px solid var(--gold);
+	font-size: 1.15rem;
+}
+
+.retenir-titre,
+.exemple-titre {
+	margin: 0 0 0.5rem !important;
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.1em;
+	color: var(--gold);
+	font-size: 1.1rem;
+	line-height: 1.2;
+}
+
+.retenir-corps > :last-child {
+	margin-bottom: 0.9rem;
+}
+
+/* ——— Exemple ——— */
+
+.exemple {
+	margin: 1.75rem 0;
+	padding: 0 0 0 1.25rem;
+	border-left: 1px dashed var(--rule-2);
+	font-size: 1.15rem;
+	color: var(--ink-2);
+}
+
+.exemple > div > :last-child {
+	margin-bottom: 0;
+}
+
+/* ——— Sidenotes (Tufte-style) ——— */
+
+.sn-toggle {
+	display: none;
+}
+
+.sn-ref {
+	cursor: pointer;
+}
+
+.def-mot {
+	text-decoration: underline dotted;
+	text-decoration-color: var(--oxblood);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.22em;
+	cursor: help;
+}
+
+.sn-num::after {
+	counter-increment: sn;
+	content: counter(sn);
+	font-size: 0.68em;
+	vertical-align: super;
+	line-height: 0;
+	color: var(--oxblood);
+	padding-left: 0.08em;
+	font-variant-numeric: lining-nums;
+}
+
+.sidenote {
+	float: right;
+	clear: right;
+	width: var(--margin-col);
+	margin-right: calc(-1 * (var(--margin-col) + var(--gap-col)));
+	margin-top: 0.3rem;
+	margin-bottom: 1rem;
+	font-size: 0.95rem;
+	line-height: 1.4;
+	color: var(--ink-2);
+	font-style: normal;
+	font-weight: 400;
+	position: relative;
+	hyphens: auto;
+}
+
+.sn-numerotee::before {
+	content: counter(sn) '. ';
+	color: var(--oxblood);
+	font-variant-numeric: lining-nums;
+}
+
+.sn-terme {
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.06em;
+	font-size: 1.06em;
+	color: var(--oxblood);
+	text-decoration: none;
+}
+
+.sn-terme:hover {
+	text-decoration: underline;
+}
+
+/* Narrow screens: sidenotes collapse and open inline when tapped */
+@media (max-width: 68rem) {
+	.sidenote {
+		display: none;
+		float: none;
+		width: auto;
+		margin: 0.6rem 0 0.9rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--paper-2);
+		border-left: 2px solid var(--oxblood);
+		font-size: 1rem;
+	}
+
+	.sn-toggle:checked + .sidenote {
+		display: block;
+	}
+
+	.prose > * {
+		max-width: none;
+	}
+}
+
+@media (max-width: 40rem) {
+	.prose {
+		font-size: 1.15rem;
+	}
+	.prose h2 {
+		font-size: 1.75rem;
+	}
+	.prose h3 {
+		font-size: 1.35rem;
+	}
+	.citation blockquote {
+		font-size: 1.2rem;
+	}
+}

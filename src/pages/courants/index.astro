@@ -1,0 +1,123 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import EnTete from '../../components/EnTete.astro';
+import { romain, typoProfond } from '../../lib/programme';
+
+const courants = (await getCollection('courants'))
+	.sort((a, b) => a.data.ordre - b.data.ordre)
+	.map((c) => ({ ...c, data: typoProfond(c.data) }));
+const auteurs = await getCollection('auteurs');
+const figures = (id: string) => auteurs.filter((a) => a.data.courants.some((c) => c.id === id));
+---
+
+<Base title="Courants" description="Les grandes écoles de pensée de l’histoire de la philosophie.">
+	<EnTete
+		sur="Annexe"
+		titre="Courants"
+		intro="Les grandes écoles de pensée, dans l’ordre de l’histoire. Situer un auteur dans son courant aide à comprendre ses thèses."
+	/>
+
+	<div class="wrap-narrow">
+		<ol class="frise">
+			{
+				courants.map((c, i) => (
+					<li>
+						<a href={`/courants/${c.id}`} class="courant">
+							<span class="num">{romain(i + 1)}</span>
+							<span class="texte">
+								<span class="periode sc">{c.data.periode}</span>
+								<span class="nom">{c.data.nom}</span>
+								<span class="resume">{c.data.resume}</span>
+								<span class="figures">
+									{figures(c.id)
+										.map((a) => a.data.nom)
+										.join(' · ')}
+								</span>
+							</span>
+						</a>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</Base>
+
+<style>
+	.frise {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		position: relative;
+	}
+
+	.frise::before {
+		content: '';
+		position: absolute;
+		left: 1.6rem;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		width: 1px;
+		background: var(--rule-2);
+	}
+
+	.courant {
+		display: grid;
+		grid-template-columns: 3.2rem 1fr;
+		gap: 1rem;
+		padding: 0.9rem 0.5rem 1.2rem 0;
+		text-decoration: none;
+		color: var(--ink);
+		position: relative;
+	}
+
+	.num {
+		font-family: var(--font-display);
+		font-weight: 600;
+		color: var(--gold);
+		text-align: center;
+		background: var(--paper);
+		align-self: start;
+		padding: 0.2rem 0;
+		position: relative;
+		font-size: 1.1rem;
+	}
+
+	.texte {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		border-bottom: 1px solid var(--rule);
+		padding-bottom: 1.1rem;
+	}
+
+	.periode {
+		color: var(--ink-3);
+		font-size: 0.98rem;
+	}
+
+	.nom {
+		font-family: var(--font-display);
+		font-size: 1.75rem;
+		line-height: 1.15;
+		transition: color 0.15s;
+	}
+
+	.courant:hover .nom {
+		color: var(--oxblood);
+	}
+
+	.resume {
+		color: var(--ink-2);
+		font-size: 1.1rem;
+		line-height: 1.45;
+	}
+
+	.figures {
+		margin-top: 0.3rem;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.05em;
+		color: var(--oxblood);
+		font-size: 1rem;
+	}
+</style>
