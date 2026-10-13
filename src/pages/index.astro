@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../lib/chemin';
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import { notionsTriees, PARCOURS, romain, idCarte } from '../lib/programme';
@@ -41,11 +42,11 @@ const annexes = [
 
 	<div class="wrap-narrow">
 		<aside class="reprendre no-print" data-reprendre hidden aria-label="Reprendre">
-			<a class="reprendre-lien" data-derniere href="/">
+			<a class="reprendre-lien" data-derniere href={chemin('/')}>
 				<span class="sc">Reprendre la lecture</span>
 				<span class="reprendre-titre" data-derniere-titre></span>
 			</a>
-			<a class="reprendre-lien" href="/revisions">
+			<a class="reprendre-lien" href={chemin('/revisions')}>
 				<span class="sc">Révisions du jour</span>
 				<span class="reprendre-titre" data-dues></span>
 			</a>
@@ -68,7 +69,7 @@ const annexes = [
 							<ol class="lecons">
 								{lecons.map((n) => (
 									<li>
-										<a href={`/notions/${n.id}`} class="lecon-ligne" data-notion={n.id}>
+										<a href={chemin(`/notions/${n.id}`)} class="lecon-ligne" data-notion={n.id}>
 											<span class="lecon-num">{romain(n.data.numero)}</span>
 											<span class="lecon-texte">
 												<span class="lecon-titre">{n.data.titre}</span>
@@ -94,7 +95,7 @@ const annexes = [
 				{
 					annexes.map((a) => (
 						<li>
-							<a href={a.href}>
+							<a href={chemin(a.href)}>
 								<span class="annexe-titre">{a.titre}</span>
 								<span class="annexe-desc">{a.desc}</span>
 							</a>
@@ -109,6 +110,7 @@ const annexes = [
 </Base>
 
 <script>
+	import { chemin } from '../lib/chemin';
 	import { charger, estDue } from '../scripts/store';
 
 	const { cartesParNotion, titres } = JSON.parse(
@@ -140,7 +142,7 @@ const annexes = [
 		if (d.derniere && titres[d.derniere]) {
 			bloc.hidden = false;
 			const lien = bloc.querySelector<HTMLAnchorElement>('[data-derniere]')!;
-			lien.href = `/notions/${d.derniere}`;
+			lien.href = chemin(`/notions/${d.derniere}`);
 			bloc.querySelector('[data-derniere-titre]')!.textContent = titres[d.derniere];
 			bloc.querySelector('[data-dues]')!.textContent = dues
 				? `${dues} carte${dues > 1 ? 's' : ''} à revoir`

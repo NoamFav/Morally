@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../lib/chemin';
 import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
 import { notionsTriees, idCarte, romain } from '../lib/programme';
@@ -38,7 +39,7 @@ const notions = (await notionsTriees()).map((n) => ({
 								<th scope="row">
 									<span class="cellule">
 										<span class="num">{romain(n.numero)}</span>
-										<a href={`/notions/${n.id}`}>{n.titre}</a>
+										<a href={chemin(`/notions/${n.id}`)}>{n.titre}</a>
 									</span>
 								</th>
 								<td data-lu>—</td>
@@ -87,6 +88,7 @@ const notions = (await notionsTriees()).map((n) => ({
 </Base>
 
 <script>
+	import { chemin } from '../lib/chemin';
 	import { charger, estMaitrisee, exporter, importer, toutEffacer } from '../scripts/store';
 
 	interface N {
@@ -124,7 +126,7 @@ const notions = (await notionsTriees()).map((n) => ({
 			art.className = 'note';
 			const h = document.createElement('h3');
 			const a = document.createElement('a');
-			a.href = `/notions/${n.id}#notes`;
+			a.href = chemin(`/notions/${n.id}#notes`);
 			a.textContent = n.titre;
 			h.append(a);
 			const date = document.createElement('p');

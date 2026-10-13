@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../../lib/chemin';
 interface Props {
 	notion: string;
 	titre: string;
@@ -13,7 +14,7 @@ const { notion, titre } = Astro.props;
 		rows="7"
 		placeholder="Vos idées, vos exemples personnels, les références que vous voulez retenir…"
 		spellcheck="true"></textarea>
-	<p class="notes-etat" aria-live="polite"><span data-etat>Enregistré dans ce navigateur.</span> <a href="/carnet">Ouvrir le carnet</a></p>
+	<p class="notes-etat" aria-live="polite"><span data-etat>Enregistré dans ce navigateur.</span> <a href={chemin('/carnet')}>Ouvrir le carnet</a></p>
 </m-notes>
 
 <script>

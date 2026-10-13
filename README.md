@@ -45,6 +45,14 @@ Components available inside lesson bodies, with no import needed:
 
 French spacing (non-breaking spaces inside « » and before : ; ? !) is applied automatically by `src/lib/typo.mjs`.
 
+## Deployment
+
+Every push to `main` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy.yml`). It is live at <https://noamfav.github.io/Morally/>.
+
+Because the site lives under `/Morally/`, internal links in `.astro` files go through `chemin()` from `src/lib/chemin.ts`, for example `href={chemin('/lexique')}`. Links written in Markdown, like `[texte](/notions/le-temps)`, are prefixed automatically.
+
+The source PDFs live in `sources/`, which is git-ignored: they stay on your machine and are never committed or deployed.
+
 ## Design
 
 The palette and type live in `src/styles/global.css` (light and dark tokens) and `src/styles/lecon.css` (lesson prose, margin notes, boxes). Fonts are EB Garamond (text) and Cormorant Garamond (titles), loaded through Astro's font API in `astro.config.mjs`.

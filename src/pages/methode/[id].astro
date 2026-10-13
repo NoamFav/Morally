@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../../lib/chemin';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Retenir from '../../components/lecon/Retenir.astro';
@@ -31,7 +32,7 @@ const { Content } = await render(page);
 <Base title={data.titre} description={data.resume}>
 	<article>
 		<header class="tete">
-			<p class="sc sur"><a href="/methode">Méthode</a> — Fiche {romain(data.ordre)}</p>
+			<p class="sc sur"><a href={chemin('/methode')}>Méthode</a> — Fiche {romain(data.ordre)}</p>
 			<h1>{data.titre}</h1>
 			<span class="fleuron" aria-hidden="true">❦</span>
 			<p class="resume">{data.resume}</p>
@@ -45,7 +46,7 @@ const { Content } = await render(page);
 			<nav class="voisines" aria-label="Fiches voisines">
 				{
 					precedente ? (
-						<a href={`/methode/${precedente.id}`} class="voisine">
+						<a href={chemin(`/methode/${precedente.id}`)} class="voisine">
 							<span class="sc">Fiche précédente</span>
 							<span class="titre">{precedente.data.titre}</span>
 						</a>
@@ -55,7 +56,7 @@ const { Content } = await render(page);
 				}
 				{
 					suivante && (
-						<a href={`/methode/${suivante.id}`} class="voisine suiv">
+						<a href={chemin(`/methode/${suivante.id}`)} class="voisine suiv">
 							<span class="sc">Fiche suivante</span>
 							<span class="titre">{suivante.data.titre}</span>
 						</a>

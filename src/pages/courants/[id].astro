@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../../lib/chemin';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { notionsTriees, typoProfond } from '../../lib/programme';
@@ -30,7 +31,7 @@ const notions = (await notionsTriees()).filter((n) => n.data.courants.some((c) =
 <Base title={data.nom} description={data.resume}>
 	<article class="wrap-narrow fiche-courant">
 		<header>
-			<p class="sc sur"><a href="/courants">Courants</a> · {data.periode}</p>
+			<p class="sc sur"><a href={chemin('/courants')}>Courants</a> · {data.periode}</p>
 			<h1>{data.nom}</h1>
 			<span class="fleuron" aria-hidden="true">❦</span>
 			<p class="resume">{data.resume}</p>
@@ -55,7 +56,7 @@ const notions = (await notionsTriees()).filter((n) => n.data.courants.some((c) =
 						<ul class="liens">
 							{figures.map((a) => (
 								<li>
-									<a href={`/auteurs/${a.id}`}>{a.data.nom}</a> <span class="dates">{a.data.dates}</span>
+									<a href={chemin(`/auteurs/${a.id}`)}>{a.data.nom}</a> <span class="dates">{a.data.dates}</span>
 								</li>
 							))}
 						</ul>
@@ -69,7 +70,7 @@ const notions = (await notionsTriees()).filter((n) => n.data.courants.some((c) =
 						<ul class="liens">
 							{notions.map((n) => (
 								<li>
-									<a href={`/notions/${n.id}`}>{n.data.titre}</a>
+									<a href={chemin(`/notions/${n.id}`)}>{n.data.titre}</a>
 								</li>
 							))}
 						</ul>
@@ -79,8 +80,8 @@ const notions = (await notionsTriees()).filter((n) => n.data.courants.some((c) =
 		</div>
 
 		<nav class="voisins" aria-label="Courants voisins">
-			{precedent ? <a href={`/courants/${precedent.id}`}>← {precedent.data.nom}</a> : <span />}
-			{suivant && <a href={`/courants/${suivant.id}`}>{suivant.data.nom} →</a>}
+			{precedent ? <a href={chemin(`/courants/${precedent.id}`)}>← {precedent.data.nom}</a> : <span />}
+			{suivant && <a href={chemin(`/courants/${suivant.id}`)}>{suivant.data.nom} →</a>}
 		</nav>
 	</article>
 </Base>

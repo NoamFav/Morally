@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../lib/chemin';
 import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
 import Lectures from '../components/Lectures.astro';
@@ -37,7 +38,7 @@ const total = notions.reduce((s, n) => s + n.data.lectures.length, 0);
 			notions.map((n) => (
 				<section class="bloc" data-bloc>
 					<h2>
-						<a href={`/notions/${n.id}#lectures`}>{n.data.titre}</a>
+						<a href={chemin(`/notions/${n.id}#lectures`)}>{n.data.titre}</a>
 					</h2>
 					<Lectures lectures={n.data.lectures} />
 				</section>

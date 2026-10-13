@@ -24,3 +24,21 @@ export function rehypeTypo() {
 	};
 	return walk;
 }
+
+/**
+ * Rehype plugin prefixing root-relative links in Markdown/MDX with the site base,
+ * so `[texte](/notions/x)` keeps working when the site lives under /Morally/.
+ * @param {{ base: string }} options
+ */
+export function rehypeBase({ base }) {
+	const prefixe = base.replace(/\/$/, '');
+	/** @param {any} node */
+	const walk = (node) => {
+		const href = node.properties?.href;
+		if (node.tagName === 'a' && typeof href === 'string' && href.startsWith('/') && !href.startsWith('//')) {
+			node.properties.href = prefixe + href;
+		}
+		node.children?.forEach(walk);
+	};
+	return () => walk;
+}

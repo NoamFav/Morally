@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../../lib/chemin';
 import { getEntry } from 'astro:content';
 
 interface Props {
@@ -15,6 +16,6 @@ const nom = fiche?.data.nom ?? auteur;
 <figure class="citation">
 	<blockquote><slot /></blockquote>
 	<figcaption>
-		— {fiche ? <a href={`/auteurs/${fiche.id}`}>{nom}</a> : nom}{source && <>, <cite>{source}</cite></>}
+		— {fiche ? <a href={chemin(`/auteurs/${fiche.id}`)}>{nom}</a> : nom}{source && <>, <cite>{source}</cite></>}
 	</figcaption>
 </figure>

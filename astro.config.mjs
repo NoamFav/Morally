@@ -1,12 +1,17 @@
 // @ts-check
 import { defineConfig, fontProviders } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import { rehypeTypo } from './src/lib/typo.mjs';
+import { rehypeTypo, rehypeBase } from './src/lib/typo.mjs';
+
+// Served from GitHub Pages as a project site: https://noamfav.github.io/Morally/
+const base = '/Morally';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://noamfav.github.io',
+	base,
 	integrations: [mdx()],
-	markdown: { rehypePlugins: [rehypeTypo] },
+	markdown: { rehypePlugins: [rehypeTypo, rehypeBase({ base })] },
 	prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
 	fonts: [
 		{

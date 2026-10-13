@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../lib/chemin';
 import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
 import { notionsTriees, PARCOURS, romain, typoProfond } from '../lib/programme';
@@ -29,7 +30,7 @@ const total = notions.reduce((s, n) => s + n.data.sujets.length, 0);
 						{ns.map((n) => (
 							<div class="notion">
 								<h3>
-									<a href={`/notions/${n.id}#sujets`}>{n.data.titre}</a>
+									<a href={chemin(`/notions/${n.id}#sujets`)}>{n.data.titre}</a>
 								</h3>
 								{n.data.sujets.map((s) => (
 									<details class="sujet" data-sujet>

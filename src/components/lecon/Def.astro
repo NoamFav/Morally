@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../../lib/chemin';
 import { getEntry } from 'astro:content';
 import { typo } from '../../lib/typo.mjs';
 
@@ -13,4 +14,4 @@ if (!entree) throw new Error(`<Def t="${t}"> : terme absent du lexique.`);
 const id = `def-${t}-${Math.random().toString(36).slice(2, 7)}`;
 ---
 
-<label for={id} class="def-mot sn-ref"><slot /></label><input type="checkbox" id={id} class="sn-toggle" /><span class="sidenote sn-def"><a href={`/lexique#${t}`} class="sn-terme">{entree.data.terme}</a> — {typo(entree.data.definition)}</span>
+<label for={id} class="def-mot sn-ref"><slot /></label><input type="checkbox" id={id} class="sn-toggle" /><span class="sidenote sn-def"><a href={chemin(`/lexique#${t}`)} class="sn-terme">{entree.data.terme}</a> — {typo(entree.data.definition)}</span>

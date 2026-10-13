@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../../lib/chemin';
 import { getEntries, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Def from '../../components/lecon/Def.astro';
@@ -75,7 +76,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 	<article class="lecon" data-notion={notion.id}>
 		<header class="lecon-tete">
 			<p class="surtitre sc">
-				<a href={`/#livre-${parcours.livre}`}>Livre {romain(parcours.livre)} · {parcours.titre}</a>{' '}
+				<a href={chemin(`/#livre-${parcours.livre}`)}>Livre {romain(parcours.livre)} · {parcours.titre}</a>{' '}
 				<span aria-hidden="true">—</span>{' '}Leçon {romain(data.numero)}
 			</p>
 			<h1>{data.titre}</h1>
@@ -166,7 +167,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 								{
 									auteurs.map((a) => (
 										<li>
-											<a href={`/auteurs/${a.id}`}>{a.data.nom}</a>
+											<a href={chemin(`/auteurs/${a.id}`)}>{a.data.nom}</a>
 											<span class="dates">{a.data.dates}</span>
 										</li>
 									))
@@ -180,7 +181,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 									<ul>
 										{courants.map((c) => (
 											<li>
-												<a href={`/courants/${c.id}`}>{c.data.nom}</a>
+												<a href={chemin(`/courants/${c.id}`)}>{c.data.nom}</a>
 											</li>
 										))}
 									</ul>
@@ -194,7 +195,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 									<ul>
 										{liees.map((n) => (
 											<li>
-												<a href={`/notions/${n.id}`}>{n.data.titre}</a>
+												<a href={chemin(`/notions/${n.id}`)}>{n.data.titre}</a>
 											</li>
 										))}
 									</ul>
@@ -209,7 +210,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 					<h2>Cartes de révision</h2>
 					<p class="annexe-intro">
 						Lisez la question, répondez de tête, puis retournez la carte. Les cartes manquées reviennent
-						plus tôt dans vos <a href="/revisions">révisions</a>.
+						plus tôt dans vos <a href={chemin('/revisions')}>révisions</a>.
 					</p>
 					<Cartes cartes={cartes} />
 				</section>
@@ -225,7 +226,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 					<h2>Sujets de dissertation</h2>
 					<p class="annexe-intro">
 						Cherchez d’abord votre propre problématique, puis comparez avec les pistes proposées. Voir
-						aussi la <a href="/methode/la-dissertation">méthode de la dissertation</a>.
+						aussi la <a href={chemin('/methode/la-dissertation')}>méthode de la dissertation</a>.
 					</p>
 					<div class="sujets">
 						{
@@ -270,7 +271,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 					<nav class="voisines" aria-label="Leçons voisines">
 						{
 							precedente && (
-								<a href={`/notions/${precedente.id}`} class="voisine prec">
+								<a href={chemin(`/notions/${precedente.id}`)} class="voisine prec">
 									<span class="sc">Leçon précédente</span>
 									<span class="voisine-titre">{precedente.data.titre}</span>
 								</a>
@@ -278,7 +279,7 @@ const composants = { Def, Note, Retenir, Citation, Exemple };
 						}
 						{
 							suivante && (
-								<a href={`/notions/${suivante.id}`} class="voisine suiv">
+								<a href={chemin(`/notions/${suivante.id}`)} class="voisine suiv">
 									<span class="sc">Leçon suivante</span>
 									<span class="voisine-titre">{suivante.data.titre}</span>
 								</a>

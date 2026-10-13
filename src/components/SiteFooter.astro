@@ -1,4 +1,5 @@
 ---
+import { chemin } from '../lib/chemin';
 import { typo } from '../lib/typo.mjs';
 const annee = new Date().getFullYear();
 const devise = typo('« On n’apprend pas la philosophie, on apprend à philosopher. »');
@@ -10,10 +11,10 @@ const devise = typo('« On n’apprend pas la philosophie, on apprend à philoso
 		<div class="bas">
 			<span><em>Morally</em> · cours de philosophie, terminale · {annee}</span>
 			<nav aria-label="Annexes">
-				<a href="/sujets">Sujets</a>
-				<a href="/lectures">Lectures</a>
-				<a href="/methode">Méthode</a>
-				<a href="/carnet">Carnet</a>
+				<a href={chemin('/sujets')}>Sujets</a>
+				<a href={chemin('/lectures')}>Lectures</a>
+				<a href={chemin('/methode')}>Méthode</a>
+				<a href={chemin('/carnet')}>Carnet</a>
 			</nav>
 		</div>
 	</div>
